@@ -82,8 +82,30 @@ func Insert_BTree(s *Set_BTree, v int) {
 }
 
 func Search_BTree(s *Set_BTree, v int) *Value_Location {
-	fmt.Println("Not implemented yet")
-	return nil
+	if s.root == nil {
+		return nil
+	}
+
+	var Search_Cell_BTree func(c *Cell_BTree, v int) *Value_Location
+	Search_Cell_BTree = func(c *Cell_BTree, v int) *Value_Location {
+
+		search_idx := 0
+		for search_idx < c.cur_size && v > c.keys[search_idx] {
+			search_idx += 1
+		}
+
+		if c.keys[search_idx] == v {
+			return &Value_Location{c, search_idx, v}
+		}
+
+		if c.is_leaf {
+			return nil
+		}
+
+		return Search_Cell_BTree(c.children[search_idx], v)
+	}
+
+	return Search_Cell_BTree(s.root, v)
 }
 
 func Delete_BTree(s *Set_BTree, v *Value_Location) {
