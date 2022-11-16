@@ -82,26 +82,32 @@ func Insert_BTree(s *Set_BTree, v int) {
 }
 
 func Search_BTree(s *Set_BTree, v int) *Value_Location {
+	// if the tree is empty, return nil
 	if s.root == nil {
 		return nil
 	}
 
+	// setup a function to recursivly search via cell instead of whole tree
 	var Search_Cell_BTree func(c *Cell_BTree, v int) *Value_Location
 	Search_Cell_BTree = func(c *Cell_BTree, v int) *Value_Location {
 
+		// find first key that is smaller than or equal to v
 		search_idx := 0
 		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
 
+		// if that key is equal to v, value has been found
 		if c.keys[search_idx] == v {
 			return &Value_Location{c, search_idx, v}
 		}
 
+		// if value is not found and current cell is a leaf, return nil
 		if c.is_leaf {
 			return nil
 		}
 
+		// if value is not found and current cell is not leaf, search child cell for value
 		return Search_Cell_BTree(c.children[search_idx], v)
 	}
 
