@@ -55,7 +55,7 @@ func Insert_BTree(s *Set_BTree, v int) {
 	var Find_Leaf func(c *Cell_BTree, v int) *Cell_BTree
 	Find_Leaf = func(c *Cell_BTree, v int) *Cell_BTree {
 		// if at leaf, return
-		if c.children[0] == nil {
+		if IsLeaf(c) {
 			return c
 		}
 
@@ -64,8 +64,6 @@ func Insert_BTree(s *Set_BTree, v int) {
 		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
-
-		fmt.Println(search_idx)
 
 		// value is already in tree, return to that cell
 		if c.keys[search_idx] == v {
@@ -103,10 +101,9 @@ func Insert_BTree(s *Set_BTree, v int) {
 		if c.cur_size != c.max_size {
 			return
 		}
-		//c.is_leaf = false
 
 		// setup new left node
-		M := c.cur_size
+		M := c.cur_size - 1
 		left_node := NewCell_BTree(c.max_size, true, c.ID)
 		for idx := 0; idx <= (M/2)-1; idx++ {
 			left_node.keys[idx] = c.keys[idx]
@@ -122,6 +119,26 @@ func Insert_BTree(s *Set_BTree, v int) {
 
 		new_mid_value := c.keys[M/2]
 
+		// fix leafs of tree
+		if c.children[0] != nil {
+			// fix left node
+			for idx := 0; idx < left_node.cur_size+1; idx++ {
+				left_node.children[idx] = c.children[idx]
+				left_node.children[idx].parent = left_node
+				left_node.children[idx].ID = idx
+
+			}
+
+			// fix right node
+			for idx := 0; idx < right_node.cur_size+1; idx++ {
+				right_node.children[idx] = c.children[idx+left_node.cur_size+1]
+				right_node.children[idx].parent = right_node
+				right_node.children[idx].ID = idx
+
+			}
+
+		}
+
 		// push new value to node above if root
 		if c.parent == nil {
 			new_root := NewCell_BTree(c.max_size, false, 0)
@@ -132,26 +149,6 @@ func Insert_BTree(s *Set_BTree, v int) {
 			new_root.children[0] = left_node
 			left_node.parent = new_root
 			s.root = new_root
-
-			// fix leafs of tree
-			if c.children[0] != nil {
-				// fix left node
-				for idx := 0; idx < left_node.cur_size+1; idx++ {
-					left_node.children[idx] = c.children[idx]
-					left_node.children[idx].parent = left_node
-					left_node.children[idx].ID = idx
-
-				}
-
-				// fix right node
-				for idx := 0; idx < right_node.cur_size+1; idx++ {
-					right_node.children[idx] = c.children[idx+right_node.cur_size+1]
-					right_node.children[idx].parent = right_node
-					right_node.children[idx].ID = idx
-
-				}
-
-			}
 
 			return
 		}
@@ -204,7 +201,7 @@ func Search_BTree(s *Set_BTree, v int) *Value_Location {
 		}
 
 		// if value is not found and current cell is a leaf, return nil
-		if c.children[0] == nil {
+		if IsLeaf(c) {
 			return nil
 		}
 
@@ -262,12 +259,13 @@ func test_BTree() {
 }
 
 func test_random() {
-	s := NewSet_BTree(5)
+	s := NewSet_BTree(6)
 
 	end_val := 50
 
 	for value := 1; value <= end_val; value++ {
 		Insert_BTree(s, value)
+		fmt.Println("Inserting:", value)
 		PrintSet_BTree(s)
 	}
 
@@ -331,9 +329,7 @@ func PrintSet_BTree(s *Set_BTree) {
 	print = func(c *Cell_BTree, prefix string) {
 		if c != nil {
 			to_right := (c.cur_size + 1) / 2
-			//fmt.Println("to_right", to_right)
 			to_left := (c.cur_size) - to_right + 1
-			//fmt.Println("to_left",to_left)
 			// print right half of children
 			if c.children[0] != nil {
 				for i := 0; i < to_right; i++ {
@@ -341,7 +337,8 @@ func PrintSet_BTree(s *Set_BTree) {
 				}
 			}
 			// print current self
-			fmt.Printf("%s%d : %d : %d\n", prefix, c.keys, c.cur_size, c.ID)
+			//fmt.Printf("%s%d : %d : %d\n", prefix, c.keys, c.cur_size, c.ID)
+			fmt.Printf("%s%d\n", prefix, c.keys)
 			// print left hafl of children
 			if c.children[0] != nil {
 				for i := 0; i < to_left; i++ {
@@ -397,5 +394,8 @@ func ShiftCellItems(c *Cell_BTree, free_idx int) {
 	c.keys[free_idx] = 0
 	c.children[free_idx] = nil
 	c.children[free_idx+1] = nil
+}
 
+func IsLeaf(c *Cell_BTree) bool {
+	return c.children[0] == nil
 }
