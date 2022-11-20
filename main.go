@@ -77,8 +77,6 @@ func Insert_BTree(s *Set_BTree, v int) {
 	// Step 2) Insert value into leaf node keys
 	insert_node := Find_Leaf(s.root, v)
 
-	//fmt.Println(v, insert_node.keys)
-
 	// check if value is already in tree
 	if ListContains(insert_node.keys, v) {
 		return
@@ -91,18 +89,18 @@ func Insert_BTree(s *Set_BTree, v int) {
 	PartialSort(insert_node.keys, insert_node.cur_size)
 
 	// Step 4) Check if we are done
-
 	if insert_node.cur_size != insert_node.max_size {
 		return
 	}
 
 	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
 	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
+		// Step 5) if tree is node is fine, return
 		if c.cur_size != c.max_size {
 			return
 		}
 
-		// setup new left node
+		// Step 6) setup new left node
 		M := c.cur_size - 1
 		left_node := NewCell_BTree(c.max_size, true, c.ID)
 		for idx := 0; idx <= (M/2)-1; idx++ {
@@ -110,16 +108,17 @@ func Insert_BTree(s *Set_BTree, v int) {
 			left_node.cur_size += 1
 		}
 
-		// setup new right node
+		// Step 7) setup new right node
 		right_node := NewCell_BTree(c.max_size, true, c.ID+1)
 		for idx := (M / 2) + 1; idx <= c.cur_size-1; idx++ {
 			right_node.keys[idx-(M/2)-1] = c.keys[idx]
 			right_node.cur_size += 1
 		}
 
+		// Step 8) find mid value
 		new_mid_value := c.keys[M/2]
 
-		// fix leafs of tree
+		// Step 9) if not leaf, fix all child linking
 		if c.children[0] != nil {
 			// fix left node
 			for idx := 0; idx < left_node.cur_size+1; idx++ {
@@ -134,12 +133,10 @@ func Insert_BTree(s *Set_BTree, v int) {
 				right_node.children[idx] = c.children[idx+left_node.cur_size+1]
 				right_node.children[idx].parent = right_node
 				right_node.children[idx].ID = idx
-
 			}
-
 		}
 
-		// push new value to node above if root
+		// Step 10) push new value to node above if root
 		if c.parent == nil {
 			new_root := NewCell_BTree(c.max_size, false, 0)
 			new_root.keys[0] = new_mid_value
@@ -149,14 +146,13 @@ func Insert_BTree(s *Set_BTree, v int) {
 			new_root.children[0] = left_node
 			left_node.parent = new_root
 			s.root = new_root
-
 			return
 		}
 
-		// push new value to node above if not root
-		// shift values in array to make space
+		// Step 11) shift values in array to make space
 		ShiftCellItems(c.parent, c.ID)
 
+		// Step 12) push new value to node above if not root
 		// Adjust parent so that it connects to new left and right
 		c.parent.keys[c.ID] = new_mid_value
 		c.parent.cur_size += 1
@@ -167,16 +163,11 @@ func Insert_BTree(s *Set_BTree, v int) {
 		right_node.parent = c.parent
 		c.parent.children[c.ID+1] = right_node
 
-		//PrintSet_BTree(s)
-		// Recursivly fix tree
+		// Step 13) Recursivly fix tree
 		FixTreeUpwards(s, c.parent)
 
 	}
 	FixTreeUpwards(s, insert_node)
-
-	// Step 5) adjust tree to free up space in leafs
-	// Step 5.1) split into two nodes
-
 }
 
 func Search_BTree(s *Set_BTree, v int) *Value_Location {
@@ -228,24 +219,22 @@ func Maximum_BTree(s *Set_BTree) *Value_Location {
 
 func test_BTree() {
 	// B-Tree degree
-	size := 5
+	size := 4
 	// First, insert all of 10, 20, 30, ..., 150 in order into an empty B-tree.
 	fmt.Println("***** INSERTING RIGHT **************************************************")
 	s := NewSet_BTree(size)
-	for i := 1; i < 16; i += 1 {
-		v := i * 10
-		fmt.Printf("Inserting %d\n", v)
-		Insert_BTree(s, v)
+	for i := 1; i < 100; i += 1 {
+		fmt.Printf("Inserting %d\n", i)
+		Insert_BTree(s, i)
 		PrintSet_BTree(s)
 	}
 
 	// Similarly, insert all of 350, 340, 330, ..., 210 in order into an empty B-tree.
 	fmt.Println("***** INSERTING LEFT **************************************************")
 	t := NewSet_BTree(size)
-	for i := 15; i > 0; i -= 1 {
-		v := i*10 + 200
-		fmt.Printf("Inserting %d\n", v)
-		Insert_BTree(t, v)
+	for i := 100; i > 0; i -= 1 {
+		fmt.Printf("Inserting %d\n", i)
+		Insert_BTree(t, i)
 		PrintSet_BTree(t)
 	}
 	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
@@ -272,9 +261,7 @@ func test_random() {
 }
 
 func main() {
-	//test_BTree()
-	test_random()
-
+	test_BTree()
 }
 
 // ************** HELPER CODE **********************************
