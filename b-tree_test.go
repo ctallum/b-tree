@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-
 	//"sort"
 	"testing"
 )
@@ -44,5 +43,5 @@ func TestInsert_BTree(t *testing.T) {
 			fmt.Printf("Expected %d, found %d\n", v, location.value)
 		}
 	}
-
 }
+
