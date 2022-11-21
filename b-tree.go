@@ -220,7 +220,7 @@ func Maximum_BTree(s *Set_BTree) *Value_Location {
 func test_BTree() {
 	// B-Tree degree
 	size := 4
-	// First, insert all of 10, 20, 30, ..., 150 in order into an empty B-tree.
+	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
 	fmt.Println("***** INSERTING RIGHT **************************************************")
 	s := NewSet_BTree(size)
 	for i := 1; i < 100; i += 1 {
@@ -229,39 +229,29 @@ func test_BTree() {
 		PrintSet_BTree(s)
 	}
 
-	// Similarly, insert all of 350, 340, 330, ..., 210 in order into an empty B-tree.
-	fmt.Println("***** INSERTING LEFT **************************************************")
-	t := NewSet_BTree(size)
-	for i := 100; i > 0; i -= 1 {
-		fmt.Printf("Inserting %d\n", i)
-		Insert_BTree(t, i)
-		PrintSet_BTree(t)
-	}
-	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
-	fmt.Println("***** DELETING **************************************************")
-	for i := 1; i < 16; i += 1 {
-		c := Search_BTree(t, i*10+200)
-		fmt.Printf("Deleting %d\n", i*10+200)
-		Delete_BTree(t, c)
-		PrintSet_BTree(t)
-	}
-}
-
-func test_random() {
-	s := NewSet_BTree(6)
-
-	end_val := 50
-
-	for value := 1; value <= end_val; value++ {
-		Insert_BTree(s, value)
-		fmt.Println("Inserting:", value)
-		PrintSet_BTree(s)
-	}
-
+	// // Similarly, insert all of 350, 340, 330, ..., 210 in order into an empty B-tree.
+	// fmt.Println("***** INSERTING LEFT **************************************************")
+	// t := NewSet_BTree(size)
+	// for i := 100; i > 0; i -= 1 {
+	// 	fmt.Printf("Inserting %d\n", i)
+	// 	Insert_BTree(t, i)
+	// 	PrintSet_BTree(t)
+	// }
+	// // Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
+	// fmt.Println("***** DELETING **************************************************")
+	// for i := 1; i < 16; i += 1 {
+	// 	c := Search_BTree(t, i*10+200)
+	// 	fmt.Printf("Deleting %d\n", i*10+200)
+	// 	Delete_BTree(t, c)
+	// 	PrintSet_BTree(t)
+	// }
 }
 
 func main() {
 	test_BTree()
+
+
+	fmt.Println()
 }
 
 // ************** HELPER CODE **********************************
@@ -375,7 +365,6 @@ func ShiftCellItems(c *Cell_BTree, free_idx int) {
 
 		c.children[idx+1] = c.children[idx]
 		c.children[idx+1].ID += 1
-		fmt.Println("HI")
 	}
 
 	c.keys[free_idx] = 0
