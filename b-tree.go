@@ -5,21 +5,16 @@ import (
 )
 
 type Cell_BTree struct {
-	max_size int
+	ID       int
 	cur_size int
 	keys     []int
 	children []*Cell_BTree
 	parent   *Cell_BTree
-	ID       int
-	height   int
-	is_leaf  bool
 }
 
 type Set_BTree struct {
 	degree  int
 	root    *Cell_BTree
-	maximum *int
-	minimum *int
 }
 
 type Value_Location struct {
@@ -28,15 +23,15 @@ type Value_Location struct {
 	value   int
 }
 
-func NewCell_BTree(size int, is_leaf bool, ID int) *Cell_BTree {
+func NewCell_BTree(size int,  ID int) *Cell_BTree {
 	keys := make([]int, size)
 	children := make([]*Cell_BTree, size+1)
-	cell := &Cell_BTree{size, 0, keys, children, nil, ID, 0, is_leaf}
+	cell := &Cell_BTree{ID, 0, keys, children, nil}
 	return cell
 }
 
 func NewSet_BTree(degree int) *Set_BTree {
-	tree := &Set_BTree{degree, nil, nil, nil}
+	tree := &Set_BTree{degree, nil}
 	return tree
 }
 
@@ -44,7 +39,7 @@ func (s *Set_BTree) insert(v int) {
 
 	// Step 0, if the tree is empty, initialize it
 	if s.root == nil {
-		new_node := NewCell_BTree(s.degree, true, 0)
+		new_node := NewCell_BTree(s.degree, 0)
 		new_node.keys[0] = v
 		new_node.cur_size += 1
 		s.root = new_node
@@ -55,7 +50,7 @@ func (s *Set_BTree) insert(v int) {
 	var Find_Leaf func(c *Cell_BTree, v int) *Cell_BTree
 	Find_Leaf = func(c *Cell_BTree, v int) *Cell_BTree {
 		// if at leaf, return
-		if IsLeaf(c) {
+		if c.IsLeaf() {
 			return c
 		}
 
@@ -89,27 +84,27 @@ func (s *Set_BTree) insert(v int) {
 	PartialSort(insert_node.keys, insert_node.cur_size)
 
 	// Step 4) Check if we are done
-	if insert_node.cur_size != insert_node.max_size {
+	if insert_node.cur_size != s.degree {
 		return
 	}
 
 	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
 	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
 		// Step 5) if tree is node is fine, return
-		if c.cur_size != c.max_size {
+		if c.cur_size != s.degree {
 			return
 		}
 
 		// Step 6) setup new left node
 		M := c.cur_size - 1
-		left_node := NewCell_BTree(c.max_size, true, c.ID)
+		left_node := NewCell_BTree(s.degree, c.ID)
 		for idx := 0; idx <= (M/2)-1; idx++ {
 			left_node.keys[idx] = c.keys[idx]
 			left_node.cur_size += 1
 		}
 
 		// Step 7) setup new right node
-		right_node := NewCell_BTree(c.max_size, true, c.ID+1)
+		right_node := NewCell_BTree(s.degree, c.ID+1)
 		for idx := (M / 2) + 1; idx <= c.cur_size-1; idx++ {
 			right_node.keys[idx-(M/2)-1] = c.keys[idx]
 			right_node.cur_size += 1
@@ -137,7 +132,7 @@ func (s *Set_BTree) insert(v int) {
 
 		// Step 10) push new value to node above if root
 		if c.parent == nil {
-			new_root := NewCell_BTree(c.max_size, false, 0)
+			new_root := NewCell_BTree(s.degree, 0)
 			new_root.keys[0] = new_mid_value
 			new_root.cur_size += 1
 			new_root.children[1] = right_node
@@ -191,7 +186,7 @@ func (s *Set_BTree) search(v int) *Value_Location {
 		}
 
 		// if value is not found and current cell is a leaf, return nil
-		if IsLeaf(c) {
+		if c.IsLeaf() {
 			return nil
 		}
 
@@ -235,14 +230,15 @@ func test_BTree() {
 	}
 
 
-	// // Similarly, insert all of 350, 340, 330, ..., 210 in order into an empty B-tree.
-	// fmt.Println("***** INSERTING LEFT **************************************************")
-	// t := NewSet_BTree(size)
-	// for i := 100; i > 0; i -= 1 {
-	// 	fmt.Printf("Inserting %d\n", i)
-	// 	Insert_BTree(t, i)
-	// 	PrintSet_BTree(t)
-	// }
+	// Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
+	fmt.Println("***** INSERTING LEFT **************************************************")
+	s = NewSet_BTree(size)
+	for i := 99; i > 0; i -= 1 {
+		fmt.Printf("Inserting %d\n", i)
+		s.insert(i)
+		s.print()
+	}
+
 	// // Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
 	// fmt.Println("***** DELETING **************************************************")
 	// for i := 1; i < 16; i += 1 {
@@ -382,6 +378,6 @@ func ShiftCellItems(c *Cell_BTree, free_idx int) {
 	c.children[free_idx+1] = nil
 }
 
-func IsLeaf(c *Cell_BTree) bool {
+func (c *Cell_BTree) IsLeaf() bool {
 	return c.children[0] == nil
 }
