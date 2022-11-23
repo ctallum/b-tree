@@ -16,7 +16,7 @@ func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 			// test negative values!
 			v = -v
 		}
-		Insert_BTree(s, v)
+		s.insert(v)
 		vals[i] = v
 	}
 
@@ -29,7 +29,7 @@ func TestInsert_BTree(t *testing.T) {
 	fmt.Println("Inserting values", val)
 
 	for _, v := range val {
-		location := Search_BTree(s, v)
+		location := s.search(v)
 		if location == nil {
 			t.Errorf("Error trying to find value.")
 			fmt.Printf("Tried to find %d. Found nil\n", v)
@@ -44,4 +44,3 @@ func TestInsert_BTree(t *testing.T) {
 		}
 	}
 }
-

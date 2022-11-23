@@ -40,7 +40,7 @@ func NewSet_BTree(degree int) *Set_BTree {
 	return tree
 }
 
-func Insert_BTree(s *Set_BTree, v int) {
+func (s *Set_BTree) insert(v int) {
 
 	// Step 0, if the tree is empty, initialize it
 	if s.root == nil {
@@ -125,7 +125,6 @@ func Insert_BTree(s *Set_BTree, v int) {
 				left_node.children[idx] = c.children[idx]
 				left_node.children[idx].parent = left_node
 				left_node.children[idx].ID = idx
-
 			}
 
 			// fix right node
@@ -170,7 +169,7 @@ func Insert_BTree(s *Set_BTree, v int) {
 	FixTreeUpwards(s, insert_node)
 }
 
-func Search_BTree(s *Set_BTree, v int) *Value_Location {
+func (s *Set_BTree) search(v int) *Value_Location {
 	// if the tree is empty, return nil
 	if s.root == nil {
 		return nil
@@ -203,18 +202,24 @@ func Search_BTree(s *Set_BTree, v int) *Value_Location {
 	return Search_Cell_BTree(s.root, v)
 }
 
-func Delete_BTree(s *Set_BTree, v *Value_Location) {
+func (s *Set_BTree) delete(v int) {
 	fmt.Println("Not implemented yet")
 }
 
-func Minimum_BTree(s *Set_BTree) *Value_Location {
-	fmt.Println("Not implemented yet")
-	return nil
+func (s *Set_BTree) min() *Value_Location {
+	current_node := s.root
+	for current_node.children[0] != nil {
+		current_node = current_node.children[0]
+	}
+	return &Value_Location{current_node, 0, current_node.keys[0]}
 }
 
-func Maximum_BTree(s *Set_BTree) *Value_Location {
-	fmt.Println("Not implemented yet")
-	return nil
+func (s *Set_BTree) max() *Value_Location {
+	current_node := s.root
+	for current_node.children[0] != nil {
+		current_node = current_node.children[current_node.cur_size]
+	}
+	return &Value_Location{current_node, 0, current_node.keys[current_node.cur_size-1]}
 }
 
 func test_BTree() {
@@ -225,9 +230,10 @@ func test_BTree() {
 	s := NewSet_BTree(size)
 	for i := 1; i < 100; i += 1 {
 		fmt.Printf("Inserting %d\n", i)
-		Insert_BTree(s, i)
-		PrintSet_BTree(s)
+		s.insert(i)
+		s.print()
 	}
+
 
 	// // Similarly, insert all of 350, 340, 330, ..., 210 in order into an empty B-tree.
 	// fmt.Println("***** INSERTING LEFT **************************************************")
@@ -249,9 +255,6 @@ func test_BTree() {
 
 func main() {
 	test_BTree()
-
-
-	fmt.Println()
 }
 
 // ************** HELPER CODE **********************************
@@ -301,50 +304,57 @@ func PartialSort(arr []int, partitian int) {
 	msort(arr, 0, partitian-1, make([]int, partitian))
 }
 
-func PrintSet_BTree(s *Set_BTree) {
-	var print func(*Cell_BTree, string)
-	print = func(c *Cell_BTree, prefix string) {
+func (s *Set_BTree) print() {
+	ascii_tree := ""
+	var print func(*Cell_BTree, string, bool, int)
+	print = func(c *Cell_BTree, prefix string, signal bool, layer int) {
 		if c != nil {
 			to_right := (c.cur_size + 1) / 2
 			to_left := (c.cur_size) - to_right + 1
 			// print right half of children
 			if c.children[0] != nil {
 				for i := 0; i < to_right; i++ {
-					print(c.children[i], prefix+"   ")
+					print(c.children[i], prefix+"  ", true, layer+1)
 				}
 			}
 			// print current self
 			//fmt.Printf("%s%d : %d : %d\n", prefix, c.keys, c.cur_size, c.ID)
-			fmt.Printf("%s%d\n", prefix, c.keys)
+			if signal && c.parent != nil {
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"/", c.keys[0:c.cur_size])
+			} else if !signal && c.parent != nil {
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"\\", c.keys[0:c.cur_size])
+			} else {
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"-", c.keys[0:c.cur_size])
+			}
+			//ascii_tree += fmt.Sprintf("%s%d\n", prefix, c.keys[0:c.cur_size])
 			// print left hafl of children
 			if c.children[0] != nil {
 				for i := 0; i < to_left; i++ {
-					print(c.children[to_right+i], prefix+"   ")
+					print(c.children[to_right+i], prefix+"  ", false, layer+1)
 				}
 			}
 
 		} else {
-			fmt.Printf("%s-\n", prefix)
+			ascii_tree += fmt.Sprintf("%s-\n", prefix)
 		}
 	}
 
-	fmt.Println(" /")
-	print(s.root, " |  ")
-	fmt.Println(" \\")
+	print(s.root, " ", true, 0)
 
-	fmt.Println("")
+	fmt.Print(ascii_tree + "\n")
 
-	// min := Minimum_BTree(s)
-	// max := Maximum_BTree(s)
-	// minStr := "min = -"
-	// maxStr := "max = -"
-	// if min != nil {
-	// 	minStr = fmt.Sprintf("min = %d", min.value)
-	// }
-	// if max != nil {
-	// 	maxStr = fmt.Sprintf("max = %d", max.value)
-	// }
-	// fmt.Printf("  %s  %s\n", minStr, maxStr)
+	min := s.min()
+	max := s.max()
+	minStr := "min = -"
+	maxStr := "max = -"
+	if min != nil {
+		minStr = fmt.Sprintf("min = %d", min.value)
+	}
+	if max != nil {
+		maxStr = fmt.Sprintf("max = %d", max.value)
+	}
+
+	fmt.Printf("%s  %s\n\n", minStr, maxStr)
 }
 
 func ListContains(list []int, v int) bool {
