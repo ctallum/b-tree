@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 type Cell_BTree struct {
@@ -198,7 +199,20 @@ func (s *Set_BTree) search(v int) *Value_Location {
 }
 
 func (s *Set_BTree) delete(v int) {
-	fmt.Println("Not implemented yet")
+	// step 1) find location of the value
+	location := s.search(v)
+
+	// step 2) check to see if value is found
+	if location == nil{
+		return
+	}
+
+	// step 3) determine type of location and remove appropriatly 
+	if location.cell.IsLeaf(){
+		s.DeleteFromLeaf(location)
+	} else {
+		s.DeleteFromLNonLeaf(location)
+	}
 }
 
 func (s *Set_BTree) min() *Value_Location {
@@ -381,3 +395,36 @@ func ShiftCellItems(c *Cell_BTree, free_idx int) {
 func (c *Cell_BTree) IsLeaf() bool {
 	return c.children[0] == nil
 }
+
+func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location){
+	// find min value of leaf 
+	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
+
+	// check if we can safely remove a value from the leaf
+	if loc.cell.cur_size > min_size{
+		// shift all the values above the value down by one
+		for i := loc.key_idx + 1; i < s.degree; i ++ {
+			loc.cell.keys[i - 1] = loc.cell.keys[i]
+		}
+		// reduce size of cell
+		loc.cell.cur_size -= 1
+		return
+	}
+
+	// we must borrow from the right or left to delete val
+	// try to borrow from left
+
+	// if left is nil or too small, try to borrow from right
+
+	// if right is nill or too small, then we have to merge
+
+	// if left is nil, merge with right
+
+	// if right is nil, merge with left
+
+}
+
+func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location){
+	fmt.Println("not yet implemented")
+}
+

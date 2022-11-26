@@ -26,8 +26,6 @@ func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 func TestInsert_BTree(t *testing.T) {
 	s, val := GetRandom_BTree(5, 100)
 
-	fmt.Println("Inserting values", val)
-
 	for _, v := range val {
 		location := s.search(v)
 		if location == nil {
@@ -41,6 +39,21 @@ func TestInsert_BTree(t *testing.T) {
 		if location.value != v {
 			t.Error("Error trying to find value.")
 			fmt.Printf("Expected %d, found %d\n", v, location.value)
+		}
+	}
+}
+
+func TestDelete_BTree(t *testing.T){
+	s, val := GetRandom_BTree(5,100)
+
+	for _, v := range val {
+		s.delete(v)
+
+		location := s.search(v)
+
+		if location != nil{
+			t.Errorf("Error, value was not deleted.")
+			fmt.Printf("Tried to delete %d, but value was still found\n", v)
 		}
 	}
 }
