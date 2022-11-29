@@ -199,6 +199,7 @@ func (s *Set_BTree) search(v int) *Value_Location {
 }
 
 func (s *Set_BTree) delete(v int) {
+
 	// step 1) find location of the value
 	location := s.search(v)
 
@@ -208,7 +209,7 @@ func (s *Set_BTree) delete(v int) {
 		return
 	}
 
-	fmt.Printf("removing %d\n", v)
+	// fmt.Printf("removing %d\n", v)
 	// step 3) determine type of location and remove appropriatly
 	if location.cell.IsLeaf() {
 		s.DeleteFromLeaf(location)
@@ -256,7 +257,7 @@ func test_BTree() {
 	// Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
 	fmt.Println("***** INSERTING LEFT **************************************************")
 	s = NewSet_BTree(size)
-	for i := 99; i > 0; i -= 1 {
+	for i := 100; i > 0; i -= 1 {
 		fmt.Printf("Inserting %d\n", i)
 		s.insert(i)
 		s.print()
@@ -264,11 +265,16 @@ func test_BTree() {
 
 	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
 	fmt.Println("***** DELETING **************************************************")
-	for i := 99; i > 0; i -= 1 {
+	for i := 100; i > 0; i -= 1 {
 		fmt.Printf("Deleting %d\n", i)
 		s.delete(i)
 		s.print()
 	}
+
+
+	// test_cell := s.max().cell.parent
+
+	// fmt.Println(test_cell)
 }
 
 func main() {
@@ -399,19 +405,6 @@ func (c *Cell_BTree) ShiftCellItems(free_idx int) {
 	c.children[free_idx+1] = nil
 }
 
-func (c *Cell_BTree) UnShiftCellItems(free_idx int) {
-	for idx := free_idx; idx < c.cur_size; idx++ {
-		c.keys[idx] = c.keys[idx+1]
-		if c.children[idx] == nil {
-			continue
-		}
-		c.children[idx+1] = c.children[idx+2]
-		c.children[idx+1].ID -= 1
-	}
-
-	c.keys[c.cur_size] = 0
-	c.children[free_idx+1] = nil
-}
 
 func (c *Cell_BTree) IsLeaf() bool {
 	return c.children[0] == nil
@@ -420,13 +413,15 @@ func (c *Cell_BTree) IsLeaf() bool {
 func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 	// current cell
 	c := loc.cell
-
+	
 	// shift everting donw
 	for i := loc.key_idx + 1; i < s.degree; i++ {
 		c.keys[i-1] = c.keys[i]
 	}
 	// reduce size of cell
 	c.cur_size -= 1
+
+	
 
 	// find min value of leaf
 	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
@@ -456,6 +451,8 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 		next_cell = c.parent.children[c.ID+1]
 	}
 
+	// fmt.Println(c)
+
 	if pred_cell != nil {
 		if pred_cell.cur_size > min_size {
 			// fmt.Println("borrow left")
@@ -479,6 +476,7 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 	if pred_cell != nil {
 		// fmt.Println("merge left")
 		c.MergeWithLeft()
+		// s.print()
 		if c.parent.cur_size < min_size {
 			s.FixTreeUpwards(c.parent)
 		}
@@ -527,25 +525,37 @@ func (c *Cell_BTree) BorrowFromLeft() {
 	// get cell to left
 	left_cell := c.parent.children[c.ID-1]
 
+	// fmt.Println(left_cell)
+
 	// remove last value from left
 	pred := left_cell.keys[left_cell.cur_size-1]
 	left_cell.keys[left_cell.cur_size-1] = 0
 	left_cell.cur_size -= 1
 
+	// fmt.Println(left_cell)
+
 	// free up space in current
+	if !c.IsLeaf(){
+		c.children[c.cur_size+1] = c.children[c.cur_size]
+		c.children[c.cur_size+1].ID = c.cur_size+1
+	}
 	
-	c.children[c.cur_size+1] = c.children[c.cur_size]
 	for idx := c.cur_size; idx > 0; idx-- {
 		c.keys[idx] = c.keys[idx-1]
 		c.children[idx] = c.children[idx-1]
+		c.children[idx].ID += 1
 	}
 	c.cur_size += 1
 
 	// move children if nescessary
 	if !left_cell.IsLeaf() {
 		c.children[0] = left_cell.children[left_cell.cur_size+1]
+		left_cell.children[left_cell.cur_size+1].parent = c
+		left_cell.children[left_cell.cur_size+1].ID = left_cell.cur_size+1
 		left_cell.children[left_cell.cur_size+1] = nil
 	}
+
+	// fmt.Println(left_cell)
 
 	// move parent into first spot
 	c.keys[0] = c.parent.keys[c.ID-1]
@@ -564,9 +574,11 @@ func (c *Cell_BTree) BorrowFromRight() {
 	// move parent into first spot
 	c.keys[c.cur_size] = c.parent.keys[c.ID]
 	c.cur_size += 1
+
 	if !right_cell.IsLeaf(){
 		c.children[c.cur_size] = right_cell.children[0]
 		right_cell.children[0].parent = c
+		right_cell.children[0].ID = c.cur_size
 	}
 
 	// shfit values
