@@ -219,7 +219,7 @@ func (s *Set_BTree) delete(v int) {
 }
 
 func (s *Set_BTree) min() *Value_Location {
-	if s.root == nil{
+	if s.root == nil {
 		return nil
 	}
 
@@ -231,7 +231,7 @@ func (s *Set_BTree) min() *Value_Location {
 }
 
 func (s *Set_BTree) max() *Value_Location {
-	if s.root == nil{
+	if s.root == nil {
 		return nil
 	}
 
@@ -270,11 +270,6 @@ func test_BTree() {
 		s.delete(i)
 		s.print()
 	}
-
-
-	// test_cell := s.max().cell.parent
-
-	// fmt.Println(test_cell)
 }
 
 func main() {
@@ -405,7 +400,6 @@ func (c *Cell_BTree) ShiftCellItems(free_idx int) {
 	c.children[free_idx+1] = nil
 }
 
-
 func (c *Cell_BTree) IsLeaf() bool {
 	return c.children[0] == nil
 }
@@ -413,7 +407,7 @@ func (c *Cell_BTree) IsLeaf() bool {
 func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 	// current cell
 	c := loc.cell
-	
+
 	// shift everting donw
 	for i := loc.key_idx + 1; i < s.degree; i++ {
 		c.keys[i-1] = c.keys[i]
@@ -421,7 +415,6 @@ func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 	// reduce size of cell
 	c.cur_size -= 1
 
-	
 	// find min value of leaf
 	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
 
@@ -432,9 +425,12 @@ func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 }
 
 func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
-
+	// s.print()
 	if c.parent == nil {
-		s.FixRoot(c)
+		// fmt.Println("fix root")
+		if c.cur_size == 0 {
+			s.FixRoot(c)
+		}
 		return
 	}
 
@@ -449,8 +445,6 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 	if c.ID != c.parent.cur_size {
 		next_cell = c.parent.children[c.ID+1]
 	}
-
-	// fmt.Println(c)
 
 	if pred_cell != nil {
 		if pred_cell.cur_size > min_size {
@@ -501,7 +495,7 @@ func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location) {
 
 	child := c.children[del_idx]
 
-	for !child.IsLeaf(){
+	for !child.IsLeaf() {
 		child = child.children[child.cur_size]
 	}
 
@@ -514,7 +508,7 @@ func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location) {
 
 	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
 
-	if child.cur_size < min_size{
+	if child.cur_size < min_size {
 		s.FixTreeUpwards(child)
 	}
 
@@ -527,7 +521,7 @@ func (c *Cell_BTree) BorrowFromLeft() {
 	// remove last value from left
 	last_val := left_cell.keys[left_cell.cur_size-1]
 	left_cell.keys[left_cell.cur_size-1] = 0
-	
+
 	// remove last child from left
 	last_child := left_cell.children[left_cell.cur_size]
 	left_cell.children[left_cell.cur_size] = nil
@@ -536,15 +530,15 @@ func (c *Cell_BTree) BorrowFromLeft() {
 	left_cell.cur_size -= 1
 
 	// free up keys
-	for idx := c.cur_size; idx > 0; idx -- {
-		c.keys[idx] = c.keys[idx - 1]
+	for idx := c.cur_size; idx > 0; idx-- {
+		c.keys[idx] = c.keys[idx-1]
 	}
 
 	// free up children if not leaf
-	if !c.IsLeaf(){
-		for idx := c.cur_size+1; idx > 0; idx -- {
-			c.children[idx] = c.children[idx - 1]
-			c.children[idx].ID += 1 
+	if !c.IsLeaf() {
+		for idx := c.cur_size + 1; idx > 0; idx-- {
+			c.children[idx] = c.children[idx-1]
+			c.children[idx].ID += 1
 		}
 	}
 
@@ -583,8 +577,8 @@ func (c *Cell_BTree) BorrowFromRight() {
 	}
 
 	// shift all right_cell children down by 1
-	for i := 0; i < right_cell.cur_size + 1; i ++ {
-		right_cell.children[i] = right_cell.children[i + 1]
+	for i := 0; i < right_cell.cur_size+1; i++ {
+		right_cell.children[i] = right_cell.children[i+1]
 	}
 
 	// decrease right_cell size by 1
@@ -592,10 +586,10 @@ func (c *Cell_BTree) BorrowFromRight() {
 
 	// move parent into first spot
 	c.keys[c.cur_size] = c.parent.keys[c.ID]
-	
+
 	// move right_cell child into current cell if not nill
-	if right_child != nil{
-		c.children[c.cur_size + 1] = right_child
+	if right_child != nil {
+		c.children[c.cur_size+1] = right_child
 		right_child.parent = c
 		right_child.ID = c.cur_size + 1
 	}
@@ -608,85 +602,54 @@ func (c *Cell_BTree) BorrowFromRight() {
 }
 
 func (c *Cell_BTree) MergeWithLeft() {
-	// get prev cell
+	// get cell directly to left
 	left_cell := c.parent.children[c.ID-1]
 
-	// add parent to left
-	left_cell.keys[left_cell.cur_size] = c.parent.keys[c.ID-1]
-	left_cell.cur_size += 1
+	// remove key from parent
+	parent_key := c.parent.keys[c.ID-1]
 
-	// fmt.Println(left_cell.keys)
-	// fmt.Println(left_cell.children)
-
-	// add keys from current cell to left
-	// add curent cell to left
-
-	if !c.IsLeaf() {
-		left_cell.children[left_cell.cur_size] = c.children[0]
-		c.children[0].parent = left_cell
-		c.children[0].ID = left_cell.cur_size
+	// clean up parent by shifting keys and children
+	for i := c.ID - 1; i < c.parent.cur_size; i++ {
+		c.parent.keys[i] = c.parent.keys[i+1]
 	}
 
+	// clean up parent by shifting children down
+	for i := c.ID; i < c.cur_size+1; i++ {
+		c.parent.children[i] = c.parent.children[i+1]
+		c.parent.children[i].ID = i
+	}
+
+	// reduce size of parent by 1
+	c.parent.cur_size -= 1
+
+	// add parent key to left_cell
+	left_cell.keys[left_cell.cur_size] = parent_key
+	left_cell.cur_size += 1
+
+	// store original size of left
+	init_len := left_cell.cur_size
+
+	// add keys from current cell to left_cell
 	for idx := 0; idx < c.cur_size; idx++ {
 		left_cell.keys[left_cell.cur_size] = c.keys[idx]
-		left_cell.children[left_cell.cur_size+1] = c.children[idx+1]
 		left_cell.cur_size += 1
 	}
 
-	// shift parent keys and children down one
-	for i := c.ID; i <= c.parent.cur_size; i++ {
-		c.parent.keys[i-1] = c.parent.keys[i]
-		c.parent.children[i] = c.parent.children[i+1]
-		c.parent.children[i-1].ID = i - 1
+	// add children from current cel to left_cell if not leaf
+	if !c.IsLeaf() {
+		for idx := 0; idx < c.cur_size+1; idx++ {
+			left_cell.children[init_len+idx] = c.children[idx]
+			c.children[idx].parent = left_cell
+			c.children[idx].ID = init_len + idx
+		}
 	}
-
-	//c.cur_size = c.parent.cur_size-1
-
-	c.parent.cur_size -= 1
 
 }
 
 func (c *Cell_BTree) MergeWithRight() {
-
-	// get next cell
+	// get cell directly to right
 	right_cell := c.parent.children[c.ID+1]
-
-	// clear up space for values
-	right_cell.children[right_cell.cur_size+1] = right_cell.children[right_cell.cur_size]
-	for idx := right_cell.cur_size; idx > 0; idx-- {
-		right_cell.keys[idx] = right_cell.keys[idx-1]
-		right_cell.children[idx] = right_cell.children[idx-1]
-	}
-
-	// add curent cell to left
-
-	if !c.IsLeaf() {
-		right_cell.children[0] = c.children[0]
-		c.children[0].parent = right_cell
-		c.children[0].ID = 0
-	}
-
-	for idx := 0; idx < c.cur_size; idx++ {
-		right_cell.keys[idx] = c.keys[idx]
-		right_cell.children[idx+1] = c.children[idx+1]
-		right_cell.cur_size += 1
-	}
-
-	// add parent value
-	right_cell.keys[c.cur_size] = c.parent.keys[c.ID]
-	right_cell.cur_size += 1
-
-	//fmt.Println(right_cell.children[0])
-
-	// shift parent keys and children down one
-	for i := c.ID + 1; i <= c.parent.cur_size; i++ {
-		c.parent.keys[i-1] = c.parent.keys[i]
-		c.parent.children[i-1] = c.parent.children[i]
-		c.parent.children[i-1].ID = i - 1
-	}
-	//c.parent.children[c.parent.cur_size] = nil
-
-	c.parent.cur_size -= 1
+	right_cell.MergeWithLeft()
 }
 
 func (s *Set_BTree) FixRoot(c *Cell_BTree) {
