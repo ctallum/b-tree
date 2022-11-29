@@ -218,6 +218,10 @@ func (s *Set_BTree) delete(v int) {
 }
 
 func (s *Set_BTree) min() *Value_Location {
+	if s.root == nil{
+		return nil
+	}
+
 	current_node := s.root
 	for current_node.children[0] != nil {
 		current_node = current_node.children[0]
@@ -226,6 +230,10 @@ func (s *Set_BTree) min() *Value_Location {
 }
 
 func (s *Set_BTree) max() *Value_Location {
+	if s.root == nil{
+		return nil
+	}
+
 	current_node := s.root
 	for current_node.children[0] != nil {
 		current_node = current_node.children[current_node.cur_size]
@@ -246,85 +254,21 @@ func test_BTree() {
 	}
 
 	// Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
-	// fmt.Println("***** INSERTING LEFT **************************************************")
-	// s = NewSet_BTree(size)
-	// for i := 99; i > 0; i -= 1 {
-	// 	fmt.Printf("Inserting %d\n", i)
-	// 	s.insert(i)
-	// 	s.print()
-	// }
+	fmt.Println("***** INSERTING LEFT **************************************************")
+	s = NewSet_BTree(size)
+	for i := 99; i > 0; i -= 1 {
+		fmt.Printf("Inserting %d\n", i)
+		s.insert(i)
+		s.print()
+	}
 
-	// // Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
-	// fmt.Println("***** DELETING **************************************************")
-	// for i := 1; i < 16; i += 1 {
-	// 	c := Search_BTree(t, i*10+200)
-	// 	fmt.Printf("Deleting %d\n", i*10+200)
-	// 	Delete_BTree(t, c)
-	// 	PrintSet_BTree(t)
-	// }
-
-	s.delete(25)
-	s.print()
-	s.delete(26)
-	s.print()
-	s.delete(21)
-	s.print()
-	s.delete(23)
-	s.print()
-	s.delete(29)
-	s.print()
-	s.delete(22)
-	s.print()
-	s.delete(24)
-	s.print()
-	s.delete(28)
-	s.print()
-	s.delete(27)
-	s.print()
-	s.delete(20)
-	s.print()
-	s.delete(19)
-	s.print()
-	s.delete(18)
-	s.print()
-	s.delete(17)
-	s.print()
-	s.delete(13)
-	s.print()
-	s.delete(16)
-	s.print()
-	s.delete(1)
-	s.print()
-	s.delete(2)
-	s.print()
-	s.delete(15)
-	s.print()
-	s.delete(14)
-	s.print()
-	s.delete(3)
-	s.print()
-	s.delete(11)
-	s.print()
-	s.delete(7)
-	s.print()
-	s.delete(12)
-	s.print()
-	s.delete(10)
-	s.print()
-	s.delete(4)
-	s.print()
-	s.delete(5)
-	s.print()
-	s.delete(6)
-	s.print()
-	s.delete(9)
-	s.print()
-	s.delete(8)
-	s.print()
-
-	// test_node := s.min().cell
-	// fmt.Println(test_node)
-	// // fmt.Println(test_node.parent.children[3])
+	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
+	fmt.Println("***** DELETING **************************************************")
+	for i := 99; i > 0; i -= 1 {
+		fmt.Printf("Deleting %d\n", i)
+		s.delete(i)
+		s.print()
+	}
 }
 
 func main() {
@@ -417,18 +361,18 @@ func (s *Set_BTree) print() {
 
 	fmt.Print(ascii_tree + "\n")
 
-	// min := s.min()
-	// max := s.max()
-	// minStr := "min = -"
-	// maxStr := "max = -"
-	// if min != nil {
-	// 	minStr = fmt.Sprintf("min = %d", min.value)
-	// }
-	// if max != nil {
-	// 	maxStr = fmt.Sprintf("max = %d", max.value)
-	// }
+	min := s.min()
+	max := s.max()
+	minStr := "min = -"
+	maxStr := "max = -"
+	if min != nil {
+		minStr = fmt.Sprintf("min = %d", min.value)
+	}
+	if max != nil {
+		maxStr = fmt.Sprintf("max = %d", max.value)
+	}
 
-	// fmt.Printf("%s  %s\n\n", minStr, maxStr)
+	fmt.Printf("%s  %s\n\n", minStr, maxStr)
 }
 
 func ListContains(list []int, v int) bool {
@@ -495,7 +439,6 @@ func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 
 func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 
-
 	if c.parent == nil {
 		s.FixRoot(c)
 		return
@@ -503,8 +446,6 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 
 	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
 
-	
-	
 	// see if we can manipulate cell to direct left
 	var pred_cell *Cell_BTree = nil
 	var next_cell *Cell_BTree = nil
@@ -515,37 +456,38 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 		next_cell = c.parent.children[c.ID+1]
 	}
 
-
 	if pred_cell != nil {
 		if pred_cell.cur_size > min_size {
-			fmt.Println("borrow left")
+			// fmt.Println("borrow left")
 			c.BorrowFromLeft()
+			if c.cur_size < min_size {
+				s.FixTreeUpwards(c)
+			}
 			return
 		}
 	}
 	if next_cell != nil {
 		if next_cell.cur_size > min_size {
-			fmt.Println("borrow right")
+			// fmt.Println("borrow right")
 			c.BorrowFromRight()
+			if c.cur_size < min_size {
+				s.FixTreeUpwards(c)
+			}
 			return
 		}
 	}
 	if pred_cell != nil {
-		fmt.Println("merge left")
+		// fmt.Println("merge left")
 		c.MergeWithLeft()
-		if c.parent.cur_size < min_size{
-			// fmt.Println("fixing stuff above")
-			// s.print()
+		if c.parent.cur_size < min_size {
 			s.FixTreeUpwards(c.parent)
 		}
 		return
 	}
 	if next_cell != nil {
-		fmt.Println("merge right")
+		// fmt.Println("merge right")
 		c.MergeWithRight()
-		if c.parent.cur_size < min_size{
-			// fmt.Println("fixing stuff above")
-			s.print()
+		if c.parent.cur_size < min_size {
 			s.FixTreeUpwards(c.parent)
 		}
 		return
@@ -554,7 +496,31 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 }
 
 func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location) {
-	fmt.Println("not yet implemented")
+	// find value to replace current one with
+
+	// get value just smaller
+	c := loc.cell
+	del_idx := loc.key_idx
+
+	child := c.children[del_idx]
+
+	for !child.IsLeaf(){
+		child = child.children[child.cur_size]
+	}
+
+	swap_value := child.keys[child.cur_size-1]
+
+	c.keys[del_idx] = swap_value
+
+	child.keys[child.cur_size-1] = 0
+	child.cur_size -= 1
+
+	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
+
+	if child.cur_size < min_size{
+		s.FixTreeUpwards(child)
+	}
+
 }
 
 func (c *Cell_BTree) BorrowFromLeft() {
@@ -566,8 +532,13 @@ func (c *Cell_BTree) BorrowFromLeft() {
 	left_cell.keys[left_cell.cur_size-1] = 0
 	left_cell.cur_size -= 1
 
-	// free up space in current left
-	c.ShiftCellItems(0)
+	// free up space in current
+	
+	c.children[c.cur_size+1] = c.children[c.cur_size]
+	for idx := c.cur_size; idx > 0; idx-- {
+		c.keys[idx] = c.keys[idx-1]
+		c.children[idx] = c.children[idx-1]
+	}
 	c.cur_size += 1
 
 	// move children if nescessary
@@ -590,6 +561,14 @@ func (c *Cell_BTree) BorrowFromRight() {
 	// remove first value from right
 	next := right_cell.keys[0]
 
+	// move parent into first spot
+	c.keys[c.cur_size] = c.parent.keys[c.ID]
+	c.cur_size += 1
+	if !right_cell.IsLeaf(){
+		c.children[c.cur_size] = right_cell.children[0]
+		right_cell.children[0].parent = c
+	}
+
 	// shfit values
 	for i := 1; i <= right_cell.cur_size; i++ {
 		right_cell.keys[i-1] = right_cell.keys[i]
@@ -600,10 +579,6 @@ func (c *Cell_BTree) BorrowFromRight() {
 	}
 
 	right_cell.cur_size -= 1
-
-	// move parent into first spot
-	c.keys[c.cur_size] = c.parent.keys[c.ID]
-	c.cur_size += 1
 
 	// move pred into parent
 	c.parent.keys[c.ID] = next
@@ -622,13 +597,13 @@ func (c *Cell_BTree) MergeWithLeft() {
 
 	// add keys from current cell to left
 	// add curent cell to left
-	
-	if !c.IsLeaf(){
+
+	if !c.IsLeaf() {
 		left_cell.children[left_cell.cur_size] = c.children[0]
 		c.children[0].parent = left_cell
 		c.children[0].ID = left_cell.cur_size
 	}
-	
+
 	for idx := 0; idx < c.cur_size; idx++ {
 		left_cell.keys[left_cell.cur_size] = c.keys[idx]
 		left_cell.children[left_cell.cur_size+1] = c.children[idx+1]
@@ -639,34 +614,30 @@ func (c *Cell_BTree) MergeWithLeft() {
 	for i := c.ID; i <= c.parent.cur_size; i++ {
 		c.parent.keys[i-1] = c.parent.keys[i]
 		c.parent.children[i] = c.parent.children[i+1]
-		c.parent.children[i-1].ID = i-1
+		c.parent.children[i-1].ID = i - 1
 	}
-
 
 	//c.cur_size = c.parent.cur_size-1
 
 	c.parent.cur_size -= 1
 
-
 }
 
 func (c *Cell_BTree) MergeWithRight() {
 
-	
 	// get next cell
 	right_cell := c.parent.children[c.ID+1]
 
-
 	// clear up space for values
 	right_cell.children[right_cell.cur_size+1] = right_cell.children[right_cell.cur_size]
-	for idx := right_cell.cur_size; idx > 0; idx -- {
+	for idx := right_cell.cur_size; idx > 0; idx-- {
 		right_cell.keys[idx] = right_cell.keys[idx-1]
 		right_cell.children[idx] = right_cell.children[idx-1]
 	}
 
 	// add curent cell to left
 
-	if !c.IsLeaf(){
+	if !c.IsLeaf() {
 		right_cell.children[0] = c.children[0]
 		c.children[0].parent = right_cell
 		c.children[0].ID = 0
@@ -682,14 +653,13 @@ func (c *Cell_BTree) MergeWithRight() {
 	right_cell.keys[c.cur_size] = c.parent.keys[c.ID]
 	right_cell.cur_size += 1
 
-	
 	//fmt.Println(right_cell.children[0])
 
 	// shift parent keys and children down one
 	for i := c.ID + 1; i <= c.parent.cur_size; i++ {
 		c.parent.keys[i-1] = c.parent.keys[i]
 		c.parent.children[i-1] = c.parent.children[i]
-		c.parent.children[i-1].ID = i-1
+		c.parent.children[i-1].ID = i - 1
 	}
 	//c.parent.children[c.parent.cur_size] = nil
 
@@ -697,8 +667,8 @@ func (c *Cell_BTree) MergeWithRight() {
 }
 
 func (s *Set_BTree) FixRoot(c *Cell_BTree) {
-	fmt.Println("Fixing root")
-	if c.IsLeaf(){
+	// fmt.Println("Fixing root")
+	if c.IsLeaf() {
 		s.root = nil
 		return
 	}
