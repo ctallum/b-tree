@@ -59,8 +59,13 @@ func (s *Set_BTree) insert(v int) {
 			search_idx += 1
 		}
 
+<<<<<<< HEAD
 		// // value is already in tree, return to that cell
 		if search_idx != c.cur_size && c.keys[search_idx] == v {
+=======
+		// value is already in tree, return to that cell
+		if c.keys[search_idx] == v {
+>>>>>>> 0cdfac3b20f25af16ba0b37e79a4da32b5ea14f7
 			return c
 		}
 
@@ -177,7 +182,11 @@ func (s *Set_BTree) search(v int) *Value_Location {
 			search_idx += 1
 		}
 
+<<<<<<< HEAD
 		// // if that key is equal to v, value has been found
+=======
+		// if that key is equal to v, value has been found
+>>>>>>> 0cdfac3b20f25af16ba0b37e79a4da32b5ea14f7
 		if c.keys[search_idx] == v {
 			return &Value_Location{c, search_idx, v}
 		}
