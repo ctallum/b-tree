@@ -243,7 +243,7 @@ func test_BTree() {
 	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
 	// fmt.Println("***** INSERTING RIGHT **************************************************")
 	s := NewSet_BTree(size)
-	for i := -10; i <= 0; i += 1 {
+	for i := -100; i <= 100; i += 1 {
 		fmt.Printf("Inserting %d\n", i)
 		s.insert(i)
 		s.print()
@@ -261,10 +261,10 @@ func test_BTree() {
 
 	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
 	// fmt.Println("***** DELETING **************************************************")
-	// for i := 100; i > 0; i -= 1 {
+	// for i := -100; i <= 100; i += 1 {
 	// 	fmt.Printf("Deleting %d\n", i)
-	// 	s.delete(i)
-	// 	s.print()
+	// 	// s.delete(i)
+	// 	// s.print()
 	// }
 }
 
@@ -606,16 +606,17 @@ func (c *Cell_BTree) MergeWithLeft() {
 	// remove key from parent
 	parent_key := c.parent.keys[c.ID-1]
 
-	// clean up parent by shifting keys and children
+	// clean up parent by shifting keys 
 	for i := c.ID - 1; i < c.parent.cur_size; i++ {
 		c.parent.keys[i] = c.parent.keys[i+1]
 	}
 
 	// clean up parent by shifting children down
-	for i := c.ID; i < c.cur_size+1; i++ {
+	for i := c.ID; i < c.parent.cur_size; i++ {
 		c.parent.children[i] = c.parent.children[i+1]
 		c.parent.children[i].ID = i
 	}
+	
 
 	// reduce size of parent by 1
 	c.parent.cur_size -= 1
@@ -633,6 +634,8 @@ func (c *Cell_BTree) MergeWithLeft() {
 		left_cell.cur_size += 1
 	}
 
+	
+
 	// add children from current cel to left_cell if not leaf
 	if !c.IsLeaf() {
 		for idx := 0; idx < c.cur_size+1; idx++ {
@@ -641,6 +644,7 @@ func (c *Cell_BTree) MergeWithLeft() {
 			c.children[idx].ID = init_len + idx
 		}
 	}
+	
 }
 
 func (c *Cell_BTree) MergeWithRight() {
@@ -657,17 +661,4 @@ func (s *Set_BTree) FixRoot(c *Cell_BTree) {
 	}
 	c.children[0].parent = nil
 	s.root = c.children[0]
-}
-
-func the_dereferencer(c []*int) []int {
-	new_array := make([]int, len(c))
-	for idx, _ := range c {
-		if c[idx] == nil {
-			new_array[idx] = 0
-		} else {
-			new_array[idx] = *c[idx]
-		}
-
-	}
-	return new_array
 }
