@@ -34,7 +34,7 @@ func TestInsert_BTree(t *testing.T) {
 				t.Errorf("Error trying to find value.")
 				fmt.Printf("Tried to find %d. Found nil\n", v)
 			}
-			if location.value != *location.cell.keys[location.key_idx] {
+			if location.value != location.cell.keys[location.key_idx] {
 				t.Errorf("Incorrect location read when trying to find value.")
 				fmt.Printf("location value is %d, cell value is %d\n", location.value, location.cell.keys[location.key_idx])
 			}
