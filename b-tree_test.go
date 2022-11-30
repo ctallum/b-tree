@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"math/rand"
+
 	//"sort"
 	"testing"
 )
 
 func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 	s := NewSet_BTree(degree)
+
 	vals := make([]int, n)
 	for i := 0; i < n; i++ {
 		v := rand.Intn(1000)
@@ -24,36 +26,44 @@ func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 }
 
 func TestInsert_BTree(t *testing.T) {
-	s, val := GetRandom_BTree(5, 100)
+	for degree := 4; degree < 10; degree++ {
+		fmt.Println(degree)
+		s, val := GetRandom_BTree(degree, 10*degree*degree)
+		s.print()
+		fmt.Println(val)
+		// for _, v := range val {
+		// 	location := s.search(v)
+		// 	if location == nil {
+		// 		t.Errorf("Error trying to find value.")
+		// 		fmt.Printf("Tried to find %d. Found nil\n", v)
+		// 	}
+		// 	if location.value != location.cell.keys[location.key_idx] {
+		// 		t.Errorf("Incorrect location read when trying to find value.")
+		// 		fmt.Printf("location value is %d, cell value is %d\n", location.value, location.cell.keys[location.key_idx])
+		// 	}
+		// 	if location.value != v {
+		// 		t.Error("Error trying to find value.")
+		// 		fmt.Printf("Expected %d, found %d\n", v, location.value)
+		// 	}
+		// }
 
-	for _, v := range val {
-		location := s.search(v)
-		if location == nil {
-			t.Errorf("Error trying to find value.")
-			fmt.Printf("Tried to find %d. Found nil\n", v)
-		}
-		if location.value != location.cell.keys[location.key_idx] {
-			t.Errorf("Incorrect location read when trying to find value.")
-			fmt.Printf("location value is %d, cell value is %d\n", location.value, location.cell.keys[location.key_idx])
-		}
-		if location.value != v {
-			t.Error("Error trying to find value.")
-			fmt.Printf("Expected %d, found %d\n", v, location.value)
-		}
 	}
+
 }
 
-func TestDelete_BTree(t *testing.T){
-	s, val := GetRandom_BTree(5,100)
+// func TestDelete_BTree(t *testing.T) {
+// 	for degree := 3; degree < 10; degree++ {
+// 		s, val := GetRandom_BTree(degree, 10*degree*degree)
 
-	for _, v := range val {
-		s.delete(v)
+// 		for _, v := range val {
+// 			s.delete(v)
 
-		location := s.search(v)
+// 			location := s.search(v)
 
-		if location != nil{
-			t.Errorf("Error, value was not deleted.")
-			fmt.Printf("Tried to delete %d, but value was still found\n", v)
-		}
-	}
-}
+// 			if location != nil {
+// 				t.Errorf("Error, value was not deleted.")
+// 				fmt.Printf("Tried to delete %d, but value was still found\n", v)
+// 			}
+// 		}
+// 	}
+// }

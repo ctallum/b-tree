@@ -73,35 +73,41 @@ func (s *Set_BTree) insert(v int) {
 	// Step 2) Insert value into leaf node keys
 	insert_node := Find_Leaf(s.root, v)
 
+	
 
 	// check if value is already in tree
 	if insert_node.Contains(v) {
 		return
 	}
 	
+	
 
 	insert_node.keys[insert_node.cur_size] = v
 	insert_node.cur_size += 1
 
+	
 	// Step 3) Sort list
 	PartialSort(insert_node.keys, insert_node.cur_size)
-
+	fmt.Println("HI")
+	s.print()
+	fmt.Println("HI")
 	// Step 4) Check if we are done
 	if insert_node.cur_size != s.degree {
 		return
 	}
 
+	
 	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
 	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
 		// Step 5) if tree is node is fine, return
 		if c.cur_size != s.degree {
 			return
 		}
-
 		// Step 6) setup new left node
 		M := c.cur_size - 1
+		// fmt.Println(0,M/2 -1, M/2, M/2 + 1, c.cur_size )
 		left_node := NewCell_BTree(s.degree, c.ID)
-		for idx := 0; idx < (M/2)-1; idx++ {
+		for idx := 0; idx < (M/2); idx++ {
 			left_node.keys[idx] = c.keys[idx]
 			left_node.cur_size += 1
 		}
@@ -112,7 +118,6 @@ func (s *Set_BTree) insert(v int) {
 			right_node.keys[idx-(M/2)-1] = c.keys[idx]
 			right_node.cur_size += 1
 		}
-
 
 		// Step 8) find mid value
 		new_mid_value := c.keys[M/2]
@@ -133,6 +138,7 @@ func (s *Set_BTree) insert(v int) {
 				right_node.children[idx].ID = idx
 			}
 		}
+		
 
 		// Step 10) push new value to node above if root
 		if c.parent == nil {
@@ -146,9 +152,12 @@ func (s *Set_BTree) insert(v int) {
 			s.root = new_root
 			return
 		}
+		
 
 		// Step 11) shift values in array to make space
 		c.parent.ShiftCellItems(c.ID)
+
+
 
 		// Step 12) push new value to node above if not root
 		// Adjust parent so that it connects to new left and right
@@ -161,7 +170,7 @@ func (s *Set_BTree) insert(v int) {
 		right_node.parent = c.parent
 		c.parent.children[c.ID+1] = right_node
 
-		// Step 13) Recursivly fix tree
+		// Step 13) Recursivly fix tree)
 		FixTreeUpwards(s, c.parent)
 
 	}
@@ -246,17 +255,17 @@ func (s *Set_BTree) max() *Value_Location {
 }
 
 func test_BTree() {
-	// // B-Tree degree
-	// size := 4
-	// // First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
+	// B-Tree degree
+	size := 7
+	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
 	// fmt.Println("***** INSERTING RIGHT **************************************************")
-	// s := NewSet_BTree(size)
-	// for i := 0; i <= 1600; i += 1 {
-	// 	// fmt.Printf("Inserting %d\n", i)
-	// 	s.insert(i)
-	// 	// s.print()
-	// }
-	// s.print()
+	s := NewSet_BTree(size)
+	for i := -7; i <= 0; i += 1 {
+		fmt.Printf("Inserting %d\n", i)
+		s.insert(i)
+		s.print()
+	}
+	s.print()
 
 
 	// // Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
@@ -367,18 +376,18 @@ func (s *Set_BTree) print() {
 
 	fmt.Print(ascii_tree + "\n")
 
-	min := s.min()
-	max := s.max()
-	minStr := "min = -"
-	maxStr := "max = -"
-	if min != nil {
-		minStr = fmt.Sprintf("min = %d", min.value)
-	}
-	if max != nil {
-		maxStr = fmt.Sprintf("max = %d", max.value)
-	}
+	// min := s.min()
+	// max := s.max()
+	// minStr := "min = -"
+	// maxStr := "max = -"
+	// if min != nil {
+	// 	minStr = fmt.Sprintf("min = %d", min.value)
+	// }
+	// if max != nil {
+	// 	maxStr = fmt.Sprintf("max = %d", max.value)
+	// }
 
-	fmt.Printf("%s  %s\n\n", minStr, maxStr)
+	// fmt.Printf("%s  %s\n\n", minStr, maxStr)
 }
 
 func (c *Cell_BTree) Contains(v int) bool {
