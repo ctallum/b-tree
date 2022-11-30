@@ -27,7 +27,7 @@ func TestInsert_BTree(t *testing.T) {
 	for degree := 3; degree < 10; degree++ {
 
 		s, val := GetRandom_BTree(degree, 10*degree*degree)
-
+		s.print()
 		for _, v := range val {
 			location := s.search(v)
 			if location == nil {

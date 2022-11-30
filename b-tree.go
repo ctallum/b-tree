@@ -53,53 +53,40 @@ func (s *Set_BTree) insert(v int) {
 		if c.IsLeaf() {
 			return c
 		}
-		
 
-	
-
-		// find first key that is smaller than or equal to v
 		search_idx := 0
 		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
-		
-		
 
-		// value is already in tree, return to that cell
-		if c.keys[search_idx] == v {
+		// // value is already in tree, return to that cell
+		if search_idx != c.cur_size && c.keys[search_idx] == v {
 			return c
 		}
 
-		// keep going deeper to find that leaf
+		// // keep going deeper to find that leaf
 		return Find_Leaf(c.children[search_idx], v)
 	}
 
 	// Step 2) Insert value into leaf node keys
 	insert_node := Find_Leaf(s.root, v)
 
-
-	
-
 	// check if value is already in tree
 	if insert_node.Contains(v) {
 		return
 	}
 
-
 	insert_node.keys[insert_node.cur_size] = v
 	insert_node.cur_size += 1
-	
+
 	// Step 3) Sort list
 	PartialSort(insert_node.keys, insert_node.cur_size)
-
 
 	// Step 4) Check if we are done
 	if insert_node.cur_size != s.degree {
 		return
 	}
 
-
-	
 	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
 	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
 		// Step 5) if tree is node is fine, return
@@ -108,9 +95,8 @@ func (s *Set_BTree) insert(v int) {
 		}
 		// Step 6) setup new left node
 		M := c.cur_size - 1
-		// fmt.Println(0,M/2 -1, M/2, M/2 + 1, c.cur_size )
 		left_node := NewCell_BTree(s.degree, c.ID)
-		for idx := 0; idx < (M/2); idx++ {
+		for idx := 0; idx < (M / 2); idx++ {
 			left_node.keys[idx] = c.keys[idx]
 			left_node.cur_size += 1
 		}
@@ -141,7 +127,6 @@ func (s *Set_BTree) insert(v int) {
 				right_node.children[idx].ID = idx
 			}
 		}
-		
 
 		// Step 10) push new value to node above if root
 		if c.parent == nil {
@@ -155,12 +140,9 @@ func (s *Set_BTree) insert(v int) {
 			s.root = new_root
 			return
 		}
-		
 
 		// Step 11) shift values in array to make space
 		c.parent.ShiftCellItems(c.ID)
-
-
 
 		// Step 12) push new value to node above if not root
 		// Adjust parent so that it connects to new left and right
@@ -189,24 +171,23 @@ func (s *Set_BTree) search(v int) *Value_Location {
 	// setup a function to recursivly search via cell instead of whole tree
 	var Search_Cell_BTree func(c *Cell_BTree, v int) *Value_Location
 	Search_Cell_BTree = func(c *Cell_BTree, v int) *Value_Location {
-
 		// find first key that is smaller than or equal to v
 		search_idx := 0
 		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
 
-		// if that key is equal to v, value has been found
+		// // if that key is equal to v, value has been found
 		if c.keys[search_idx] == v {
 			return &Value_Location{c, search_idx, v}
 		}
 
-		// if value is not found and current cell is a leaf, return nil
+		// // if value is not found and current cell is a leaf, return nil
 		if c.IsLeaf() {
 			return nil
 		}
 
-		// if value is not found and current cell is not leaf, search child cell for value
+		// // if value is not found and current cell is not leaf, search child cell for value
 		return Search_Cell_BTree(c.children[search_idx], v)
 	}
 
@@ -224,7 +205,6 @@ func (s *Set_BTree) delete(v int) {
 		return
 	}
 
-	// fmt.Printf("removing %d\n", v)
 	// step 3) determine type of location and remove appropriatly
 	if location.cell.IsLeaf() {
 		s.DeleteFromLeaf(location)
@@ -263,13 +243,12 @@ func test_BTree() {
 	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
 	// fmt.Println("***** INSERTING RIGHT **************************************************")
 	s := NewSet_BTree(size)
-	for i := -1000; i <= 1000; i += 1 {
+	for i := -10; i <= 0; i += 1 {
 		fmt.Printf("Inserting %d\n", i)
 		s.insert(i)
 		s.print()
 	}
 	s.print()
-
 
 	// // Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
 	// fmt.Println("***** INSERTING LEFT **************************************************")
@@ -354,7 +333,7 @@ func (s *Set_BTree) print() {
 				}
 			}
 			// print current self
-			//fmt.Printf("%s%d : %d : %d\n", prefix, c.keys, c.cur_size, c.ID)
+
 			if signal && c.parent != nil {
 				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"/", c.keys[0:c.cur_size])
 			} else if !signal && c.parent != nil {
@@ -362,7 +341,6 @@ func (s *Set_BTree) print() {
 			} else {
 				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"-", c.keys[0:c.cur_size])
 			}
-			//ascii_tree += fmt.Sprintf("%s%d\n", prefix, c.keys[0:c.cur_size])
 			// print left hafl of children
 			if c.children[0] != nil {
 				for i := 0; i < to_left; i++ {
@@ -681,15 +659,15 @@ func (s *Set_BTree) FixRoot(c *Cell_BTree) {
 	s.root = c.children[0]
 }
 
-func the_dereferencer(c []*int) []int{
+func the_dereferencer(c []*int) []int {
 	new_array := make([]int, len(c))
-	for idx, _ := range c{
-		if c[idx] == nil{
+	for idx, _ := range c {
+		if c[idx] == nil {
 			new_array[idx] = 0
-		} else{
+		} else {
 			new_array[idx] = *c[idx]
 		}
-		
+
 	}
 	return new_array
 }
