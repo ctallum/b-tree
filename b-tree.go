@@ -8,7 +8,7 @@ import (
 type Cell_BTree struct {
 	ID       int
 	cur_size int
-	keys     []*int
+	keys     []int
 	children []*Cell_BTree
 	parent   *Cell_BTree
 }
@@ -25,7 +25,7 @@ type Value_Location struct {
 }
 
 func NewCell_BTree(size int, ID int) *Cell_BTree {
-	keys := make([]*int, size)
+	keys := make([]int, size)
 	children := make([]*Cell_BTree, size+1)
 	cell := &Cell_BTree{ID, 0, keys, children, nil}
 	return cell
@@ -40,7 +40,7 @@ func (s *Set_BTree) insert(v int) {
 	// Step 0, if the tree is empty, initialize it
 	if s.root == nil {
 		new_node := NewCell_BTree(s.degree, 0)
-		new_node.keys[0] = &v
+		new_node.keys[0] = v
 		new_node.cur_size += 1
 		s.root = new_node
 		return
@@ -59,14 +59,14 @@ func (s *Set_BTree) insert(v int) {
 
 		// find first key that is smaller than or equal to v
 		search_idx := 0
-		for search_idx < c.cur_size && v > *c.keys[search_idx] {
+		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
 		
 		
 
 		// value is already in tree, return to that cell
-		if c.keys[search_idx] != nil && *c.keys[search_idx] == v {
+		if c.keys[search_idx] == v {
 			return c
 		}
 
@@ -86,7 +86,7 @@ func (s *Set_BTree) insert(v int) {
 	}
 
 
-	insert_node.keys[insert_node.cur_size] = &v
+	insert_node.keys[insert_node.cur_size] = v
 	insert_node.cur_size += 1
 	
 	// Step 3) Sort list
@@ -98,10 +98,7 @@ func (s *Set_BTree) insert(v int) {
 		return
 	}
 
-	if v == 2081{
-		fmt.Println(the_dereferencer(insert_node.keys))
-	}
-	
+
 	
 	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
 	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
@@ -195,12 +192,12 @@ func (s *Set_BTree) search(v int) *Value_Location {
 
 		// find first key that is smaller than or equal to v
 		search_idx := 0
-		for search_idx < c.cur_size && v > *c.keys[search_idx] {
+		for search_idx < c.cur_size && v > c.keys[search_idx] {
 			search_idx += 1
 		}
 
 		// if that key is equal to v, value has been found
-		if c.keys[search_idx] != nil && *c.keys[search_idx] == v {
+		if c.keys[search_idx] == v {
 			return &Value_Location{c, search_idx, v}
 		}
 
@@ -245,7 +242,7 @@ func (s *Set_BTree) min() *Value_Location {
 	for current_node.children[0] != nil {
 		current_node = current_node.children[0]
 	}
-	return &Value_Location{current_node, 0, *current_node.keys[0]}
+	return &Value_Location{current_node, 0, current_node.keys[0]}
 }
 
 func (s *Set_BTree) max() *Value_Location {
@@ -257,7 +254,7 @@ func (s *Set_BTree) max() *Value_Location {
 	for current_node.children[0] != nil {
 		current_node = current_node.children[current_node.cur_size]
 	}
-	return &Value_Location{current_node, 0, *current_node.keys[current_node.cur_size-1]}
+	return &Value_Location{current_node, 0, current_node.keys[current_node.cur_size-1]}
 }
 
 func test_BTree() {
@@ -298,12 +295,12 @@ func main() {
 
 // ************** HELPER CODE **********************************
 
-func PartialSort(arr []*int, partitian int) {
-	var msort func(arr []*int, i int, j int, temp []int)
-	var merge func(arr []*int, i int, k int, j int, temp []int)
+func PartialSort(arr []int, partitian int) {
+	var msort func(arr []int, i int, j int, temp []int)
+	var merge func(arr []int, i int, k int, j int, temp []int)
 
 	// merge sort definition
-	msort = func(arr []*int, i int, j int, temp []int) {
+	msort = func(arr []int, i int, j int, temp []int) {
 		if i == j {
 			return
 		}
@@ -314,28 +311,28 @@ func PartialSort(arr []*int, partitian int) {
 	}
 
 	// merge definition
-	merge = func(arr []*int, i int, k int, j int, temp []int) {
+	merge = func(arr []int, i int, k int, j int, temp []int) {
 		first_end := k
 		second_end := j
 		var largest int
 		for idx := j; idx >= i; idx-- {
 			if first_end == i-1 {
-				largest = *arr[second_end]
+				largest = arr[second_end]
 				second_end -= 1
 			} else if second_end == k {
-				largest = *arr[first_end]
+				largest = arr[first_end]
 				first_end -= 1
-			} else if *arr[second_end] > *arr[first_end] {
-				largest = *arr[second_end]
+			} else if arr[second_end] > arr[first_end] {
+				largest = arr[second_end]
 				second_end -= 1
 			} else {
-				largest = *arr[first_end]
+				largest = arr[first_end]
 				first_end -= 1
 			}
 			temp[idx] = largest
 		}
 		for idx2 := j; idx2 >= i; idx2-- {
-			*arr[idx2] = temp[idx2]
+			arr[idx2] = temp[idx2]
 		}
 	}
 
@@ -359,11 +356,11 @@ func (s *Set_BTree) print() {
 			// print current self
 			//fmt.Printf("%s%d : %d : %d\n", prefix, c.keys, c.cur_size, c.ID)
 			if signal && c.parent != nil {
-				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"/", the_dereferencer(c.keys[0:c.cur_size]))
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"/", c.keys[0:c.cur_size])
 			} else if !signal && c.parent != nil {
-				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"\\", the_dereferencer(c.keys[0:c.cur_size]))
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"\\", c.keys[0:c.cur_size])
 			} else {
-				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"-", the_dereferencer(c.keys[0:c.cur_size]))
+				ascii_tree += fmt.Sprintf("%s%d\n", prefix+"-", c.keys[0:c.cur_size])
 			}
 			//ascii_tree += fmt.Sprintf("%s%d\n", prefix, c.keys[0:c.cur_size])
 			// print left hafl of children
@@ -398,7 +395,7 @@ func (s *Set_BTree) print() {
 
 func (c *Cell_BTree) Contains(v int) bool {
 	for _, val := range c.keys[0:c.cur_size] {
-		if *val == v {
+		if val == v {
 			return true
 		}
 	}
@@ -417,7 +414,7 @@ func (c *Cell_BTree) ShiftCellItems(free_idx int) {
 	}
 
 	// clear out the key and the sourounding children the border it
-	c.keys[free_idx] = nil
+	c.keys[free_idx] = 0
 	c.children[free_idx] = nil
 	c.children[free_idx+1] = nil
 }
@@ -468,7 +465,7 @@ func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location) {
 	c.keys[idx] = swap_value
 
 	// remove the key from the leaf
-	child.keys[child.cur_size-1] = nil
+	child.keys[child.cur_size-1] = 0
 	child.cur_size -= 1
 
 	// check if we need to fix the leaf if it is too small
@@ -543,7 +540,7 @@ func (c *Cell_BTree) BorrowFromLeft() {
 
 	// remove last value from left
 	last_val := left_cell.keys[left_cell.cur_size-1]
-	left_cell.keys[left_cell.cur_size-1] = nil
+	left_cell.keys[left_cell.cur_size-1] = 0
 
 	// remove last child from left
 	last_child := left_cell.children[left_cell.cur_size]
@@ -588,7 +585,7 @@ func (c *Cell_BTree) BorrowFromRight() {
 
 	// remove first value from right
 	right_val := right_cell.keys[0]
-	right_cell.keys[0] = nil
+	right_cell.keys[0] = 0
 
 	// remove first key from right
 	right_child := right_cell.children[0]
