@@ -8,7 +8,6 @@ import (
 
 func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 	s := NewSet_BTree(degree)
-
 	vals := make([]int, n)
 	for i := 0; i < n; i++ {
 		v := rand.Intn(100000)
@@ -19,15 +18,12 @@ func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
 		s.insert(v)
 		vals[i] = v
 	}
-
 	return s, vals
 }
 
 func TestInsert_BTree(t *testing.T) {
 	for degree := 3; degree < 10; degree++ {
-
 		s, val := GetRandom_BTree(degree, 10*degree*degree)
-		s.print()
 		for _, v := range val {
 			location := s.search(v)
 			if location == nil {
@@ -42,51 +38,23 @@ func TestInsert_BTree(t *testing.T) {
 				t.Error("Error trying to find value.")
 				fmt.Printf("Expected %d, found %d\n", v, location.value)
 			}
+			if location.cell.parent != nil && location.cell.parent.children[location.cell.ID] != location.cell {
+				t.Error("ID of cell is wrong")
+			}
 		}
-
 	}
-
 }
 
 func TestDelete_BTree(t *testing.T) {
 	for degree := 3; degree < 10; degree++ {
 		s, val := GetRandom_BTree(degree, 10*degree*degree)
-
 		for _, v := range val {
 			s.delete(v)
-
 			location := s.search(v)
-
 			if location != nil {
 				t.Errorf("Error, value was not deleted.")
 				fmt.Printf("Tried to delete %d, but value was still found\n", v)
 			}
 		}
-	}
-}
-
-func TestSet_BTree_insert(t *testing.T) {
-	type fields struct {
-		degree int
-		root   *Cell_BTree
-	}
-	type args struct {
-		v int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Set_BTree{
-				degree: tt.fields.degree,
-				root:   tt.fields.root,
-			}
-			s.insert(tt.args.v)
-		})
 	}
 }
