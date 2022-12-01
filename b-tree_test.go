@@ -29,16 +29,13 @@ func TestInsert_BTree(t *testing.T) {
 			if location == nil {
 				t.Errorf("Error trying to find value.")
 				fmt.Printf("Tried to find %d. Found nil\n", v)
-			}
-			if location.value != location.cell.keys[location.key_idx] {
+			} else if location.value != location.cell.keys[location.key_idx] {
 				t.Errorf("Incorrect location read when trying to find value.")
 				fmt.Printf("location value is %d, cell value is %d\n", location.value, location.cell.keys[location.key_idx])
-			}
-			if location.value != v {
+			} else if location.value != v {
 				t.Error("Error trying to find value.")
 				fmt.Printf("Expected %d, found %d\n", v, location.value)
-			}
-			if location.cell.parent != nil && location.cell.parent.children[location.cell.ID] != location.cell {
+			} else if location.cell.parent != nil && location.cell.parent.children[location.cell.ID] != location.cell {
 				t.Error("ID of cell is wrong")
 			}
 		}
