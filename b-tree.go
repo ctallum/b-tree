@@ -36,6 +36,7 @@ func NewSet_BTree(degree int) *Set_BTree {
 	return tree
 }
 
+// Insert a integer value into a b-tree structure
 func (s *Set_BTree) insert(v int) {
 	// Step 0, if the tree is empty, initialize it
 	if s.root == nil {
@@ -47,29 +48,9 @@ func (s *Set_BTree) insert(v int) {
 	}
 
 	// Step 1) Find the leaf node where the value should be inserted
-	var Find_Leaf func(c *Cell_BTree, v int) *Cell_BTree
-	Find_Leaf = func(c *Cell_BTree, v int) *Cell_BTree {
-		// if at leaf, return
-		if c.IsLeaf() {
-			return c
-		}
-
-		search_idx := 0
-		for search_idx < c.cur_size && v > c.keys[search_idx] {
-			search_idx += 1
-		}
-
-		// value is already in tree, return to that cell
-		if search_idx != c.cur_size && c.keys[search_idx] == v {
-			return c
-		}
-
-		// keep going deeper to find that leaf
-		return Find_Leaf(c.children[search_idx], v)
-	}
+	insert_node := s.root.FindLeaf(v)
 
 	// Step 2) Insert value into leaf node keys
-	insert_node := Find_Leaf(s.root, v)
 
 	// check if value is already in tree
 	if insert_node.Contains(v) {
@@ -87,79 +68,7 @@ func (s *Set_BTree) insert(v int) {
 		return
 	}
 
-	var FixTreeUpwards func(s *Set_BTree, c *Cell_BTree)
-	FixTreeUpwards = func(s *Set_BTree, c *Cell_BTree) {
-		// Step 5) if tree is node is fine, return
-		if c.cur_size != s.degree {
-			return
-		}
-		// Step 6) setup new left node
-		M := c.cur_size - 1
-		left_node := NewCell_BTree(s.degree, c.ID)
-		for idx := 0; idx < (M / 2); idx++ {
-			left_node.keys[idx] = c.keys[idx]
-			left_node.cur_size += 1
-		}
-
-		// Step 7) setup new right node
-		right_node := NewCell_BTree(s.degree, c.ID+1)
-		for idx := (M / 2) + 1; idx < c.cur_size; idx++ {
-			right_node.keys[idx-(M/2)-1] = c.keys[idx]
-			right_node.cur_size += 1
-		}
-
-		// Step 8) find mid value
-		new_mid_value := c.keys[M/2]
-
-		// Step 9) if not leaf, fix all child linking
-		if !c.IsLeaf() {
-			// fix left node
-			for idx := 0; idx < left_node.cur_size+1; idx++ {
-				left_node.children[idx] = c.children[idx]
-				left_node.children[idx].parent = left_node
-				left_node.children[idx].ID = idx
-			}
-
-			// fix right node
-			for idx := 0; idx < right_node.cur_size+1; idx++ {
-				right_node.children[idx] = c.children[idx+left_node.cur_size+1]
-				right_node.children[idx].parent = right_node
-				right_node.children[idx].ID = idx
-			}
-		}
-
-		// Step 10) push new value to node above if root
-		if c.parent == nil {
-			new_root := NewCell_BTree(s.degree, 0)
-			new_root.keys[0] = new_mid_value
-			new_root.cur_size += 1
-			new_root.children[1] = right_node
-			right_node.parent = new_root
-			new_root.children[0] = left_node
-			left_node.parent = new_root
-			s.root = new_root
-			return
-		}
-
-		// Step 11) shift values in array to make space
-		c.parent.ShiftCellItems(c.ID)
-
-		// Step 12) push new value to node above if not root
-		// Adjust parent so that it connects to new left and right
-		c.parent.keys[c.ID] = new_mid_value
-		c.parent.cur_size += 1
-
-		left_node.parent = c.parent
-		c.parent.children[c.ID] = left_node
-
-		right_node.parent = c.parent
-		c.parent.children[c.ID+1] = right_node
-
-		// Step 13) Recursivly fix tree)
-		FixTreeUpwards(s, c.parent)
-
-	}
-	FixTreeUpwards(s, insert_node)
+	s.FixTreeUpwardsInsert(insert_node)
 }
 
 func (s *Set_BTree) search(v int) *Value_Location {
@@ -283,6 +192,26 @@ func main() {
 
 // ************** HELPER CODE **********************************
 
+func (c *Cell_BTree) FindLeaf(v int) *Cell_BTree {
+	// if at leaf, return
+	if c.IsLeaf() {
+		return c
+	}
+
+	search_idx := 0
+	for search_idx < c.cur_size && v > c.keys[search_idx] {
+		search_idx += 1
+	}
+
+	// value is already in tree, return to that cell
+	if search_idx != c.cur_size && c.keys[search_idx] == v {
+		return c
+	}
+
+	// keep going deeper to find that leaf
+	return c.children[search_idx].FindLeaf(v)
+}
+
 func PartialSort(arr []int, partitian int) {
 	var msort func(arr []int, i int, j int, temp []int)
 	var merge func(arr []int, i int, k int, j int, temp []int)
@@ -326,6 +255,77 @@ func PartialSort(arr []int, partitian int) {
 
 	// actuall merge sort here
 	msort(arr, 0, partitian-1, make([]int, partitian))
+}
+
+func (s *Set_BTree) FixTreeUpwardsInsert(c *Cell_BTree) {
+	// Step 5) if tree is node is fine, return
+	if c.cur_size != s.degree {
+		return
+	}
+	// Step 6) setup new left node
+	M := c.cur_size - 1
+	left_node := NewCell_BTree(s.degree, c.ID)
+	for idx := 0; idx < (M / 2); idx++ {
+		left_node.keys[idx] = c.keys[idx]
+		left_node.cur_size += 1
+	}
+
+	// Step 7) setup new right node
+	right_node := NewCell_BTree(s.degree, c.ID+1)
+	for idx := (M / 2) + 1; idx < c.cur_size; idx++ {
+		right_node.keys[idx-(M/2)-1] = c.keys[idx]
+		right_node.cur_size += 1
+	}
+
+	// Step 8) find mid value
+	new_mid_value := c.keys[M/2]
+
+	// Step 9) if not leaf, fix all child linking
+	if !c.IsLeaf() {
+		// fix left node
+		for idx := 0; idx < left_node.cur_size+1; idx++ {
+			left_node.children[idx] = c.children[idx]
+			left_node.children[idx].parent = left_node
+			left_node.children[idx].ID = idx
+		}
+
+		// fix right node
+		for idx := 0; idx < right_node.cur_size+1; idx++ {
+			right_node.children[idx] = c.children[idx+left_node.cur_size+1]
+			right_node.children[idx].parent = right_node
+			right_node.children[idx].ID = idx
+		}
+	}
+
+	// Step 10) push new value to node above if root
+	if c.parent == nil {
+		new_root := NewCell_BTree(s.degree, 0)
+		new_root.keys[0] = new_mid_value
+		new_root.cur_size += 1
+		new_root.children[1] = right_node
+		right_node.parent = new_root
+		new_root.children[0] = left_node
+		left_node.parent = new_root
+		s.root = new_root
+		return
+	}
+
+	// Step 11) shift values in array to make space
+	c.parent.ShiftCellItems(c.ID)
+
+	// Step 12) push new value to node above if not root
+	// Adjust parent so that it connects to new left and right
+	c.parent.keys[c.ID] = new_mid_value
+	c.parent.cur_size += 1
+
+	left_node.parent = c.parent
+	c.parent.children[c.ID] = left_node
+
+	right_node.parent = c.parent
+	c.parent.children[c.ID+1] = right_node
+
+	// Step 13) Recursivly fix tree)
+	s.FixTreeUpwardsInsert(c.parent)
 }
 
 func (s *Set_BTree) print() {
@@ -426,7 +426,7 @@ func (s *Set_BTree) DeleteFromLeaf(loc *Value_Location) {
 
 	// if current cell is now too small, fix tree
 	if c.cur_size < min_size {
-		s.FixTreeUpwards(c)
+		s.FixTreeUpwardsDelete(c)
 	}
 }
 
@@ -458,11 +458,11 @@ func (s *Set_BTree) DeleteFromLNonLeaf(loc *Value_Location) {
 	// check if we need to fix the leaf if it is too small
 	min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
 	if child.cur_size < min_size {
-		s.FixTreeUpwards(child)
+		s.FixTreeUpwardsDelete(child)
 	}
 }
 
-func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
+func (s *Set_BTree) FixTreeUpwardsDelete(c *Cell_BTree) {
 	// if we are at the root, try to fix the root
 	if c.parent == nil {
 
@@ -494,7 +494,7 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 			c.BorrowFromLeft()
 			// we only borrow one value at a time, so see if we need to do operation again
 			if c.cur_size < min_size {
-				s.FixTreeUpwards(c)
+				s.FixTreeUpwardsDelete(c)
 			}
 			return
 		}
@@ -506,7 +506,7 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 			c.BorrowFromRight()
 			// we only borrow one value at a time, so see if we need to do operation again
 			if c.cur_size < min_size {
-				s.FixTreeUpwards(c)
+				s.FixTreeUpwardsDelete(c)
 			}
 			return
 		}
@@ -516,7 +516,7 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 	if pred_cell != nil {
 		c.MergeWithLeft()
 		if c.parent.cur_size < min_size {
-			s.FixTreeUpwards(c.parent)
+			s.FixTreeUpwardsDelete(c.parent)
 		}
 		return
 	}
@@ -525,7 +525,7 @@ func (s *Set_BTree) FixTreeUpwards(c *Cell_BTree) {
 	if next_cell != nil {
 		c.MergeWithRight()
 		if c.parent.cur_size < min_size {
-			s.FixTreeUpwards(c.parent)
+			s.FixTreeUpwardsDelete(c.parent)
 		}
 		return
 	}
