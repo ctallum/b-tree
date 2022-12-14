@@ -143,6 +143,26 @@ The `Value_Location` struct contains the cell that contains `v`, the index of th
 
 
 ### Delete
+In order to delete a value `v` from the b-tree, we first try and find it using our `search(v)` function. If we cannot find it, we return. If we do find it, there are two options: the value we are trying to delete is in a leaf or it is not. Depending on this, there are different steps we preform. 
+
+```go
+func (s *Set_BTree) delete(v int) {
+	// find location of the value
+	location := s.search(v)
+
+	// check to see if value is found
+	if location == nil {
+		return
+	}
+
+	// determine type of location and remove appropriatly
+	if location.cell.IsLeaf() {
+		s.DeleteFromLeaf(location)
+	} else {
+		s.DeleteFromLNonLeaf(location)
+	}
+}
+```
 
 ### Min
 
