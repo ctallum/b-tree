@@ -20,3 +20,9 @@ A B-tree data structure is a self-ballencing tree data structure. Like a binary 
 ### Delete
 
 ### Min
+
+### Max
+
+
+## Sources
+
