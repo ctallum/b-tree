@@ -298,11 +298,52 @@ After again recursively fixing the tree upwards, we know that the key `v` is del
 
 ### Min
 
+In order to find the minimum value in the tree, we just keep moving down the tree using the first child until we reach a leaf. We then return the value of the first key. The code to do so look like the following:
+```go
+func (s *Set_BTree) min() *Value_Location {
+	// if tree is empty, return nil
+	if s.root == nil {
+		return nil
+	}
+
+	// start at root
+	current_node := s.root
+
+	// keep going towards first child until reach leaf
+	for current_node.children[0] != nil {
+		current_node = current_node.children[0]
+	}
+
+	// return first value of the leaf
+	return &Value_Location{current_node, 0, current_node.keys[0]}
+}
+```
+
 ### Max
+In order to find the maximum value in a tree, we just keep moving down the tree using the last child until we reach a leaf. we then return the value of the last key. The code to do so looks like the following:
+```go
+func (s *Set_BTree) max() *Value_Location {
+	// if tree is empty, return nil
+	if s.root == nil {
+		return nil
+	}
+
+	// start at root
+	current_node := s.root
+
+	// keep going towards last child until reach leaf
+	for current_node.children[0] != nil {
+		current_node = current_node.children[current_node.cur_size]
+	}
+
+	// return last value of the leaf
+	return &Value_Location{current_node, current_node.cur_size - 1, current_node.keys[current_node.cur_size-1]}
+}
+```
 
 
 ## Sources
 For insert, I used the following guide: [programiz.com](https://www.programiz.com/dsa/insertion-into-a-b-tree)
 
-For delete, I used the following guides: 
-https://www.geeksforgeeks.org/delete-operation-in-b-tree/
+For delete, I used the following guide: [webdocs.cs.ualberta.ca](https://webdocs.cs.ualberta.ca/~holte/T26/del-b-tree.html)
+
