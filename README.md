@@ -5,11 +5,19 @@ Golang implementation of a B-tree
 A B-tree data structure is a self-balancing tree data structure. Like a binary search tree, values stored in a b-tree are ordered. This allows for insertion, deletion, and search operations to happen in logarithmic time. However, unlike a binary search tree, each node in a b-tree may hold more than one value and two children.
 
 ### Structure
+A b-tree with degree *m* has the following properties:
+- Every node has at most *m* children
+- Every internatl node (not leaf or root) has at least ⌈m/2⌉ children and ⌈m/2⌉-1 keys
+- Every non-leaf node has at least two children
+- All leaves appear on the same level. The tree is ballenced 
+- A non-leaf node with *k* keys contains *k+1* children
 
-
+Each node has a set of keys. These keys act as seperation values which devide it's children which are roots of sub-trees. If a tree has two keys *a* and *b*, it will have three children. Child one will have all values less than *a*. Child two will have all the values between *a* and *b*. Child three will have all the values greater than *b*. In this manner, the tree is organized. 
 
 ### Use Cases
+A B-tree is well suited for storage systems that need to access large amount of data, such as databases. This is epspecially true if accessing the data is a time intensive process, for example if the data in a b-tree were stored in external drives. Since B-trees store large chunks of data in each node, to get to any piece of data, one needs to traverse less nodes, which means less disk read operaitons. In memory, each node will have all of its data stored physically close to eachother. Furthermore, B-trees don't reballance as often as other trees, so the time intensive task of moving data around on a disk happens less often. 
 
+Historically, B-trees have been used for databases where data is stores on disk drives. Data on disk drives is stores in disk blocks. The time needed for the disk to acess the correct disk block is far greater than the time to read the data once it is already in the correct disk block. Therefore, it makes sense to use a b-tree. The fewer times, the disk has re-seek a disk block, the quicker one can access the data. Typically, a b-tree will set the size of the node to be the size of a disk block.
 
 
 ## Implementation
