@@ -163,6 +163,138 @@ func (s *Set_BTree) delete(v int) {
 	}
 }
 ```
+#### Deleting from a leaf
+First off, if we are trying to delete a value from a leaf, there are two sinarios. If the leaf has at least *⌈m/2⌉* keys, we can safely remove a the value `v` from the cell. The cell will still have a minimum of *⌈m/2⌉-1* keys, the minimum number for a b-tree. We are then done. The second senario is if the tree has *⌈m/2⌉-1* or less keys. After we remove a key, it will have an insuficient number of keys, so we will need to fix it by expanding the size of the current cell. There are four ways to fix this issue. 
+
+1) Borrow a key from the cell directly to the right
+2) Borrow a key from the cell directly to the left
+3) Merge with the cell directly to the right
+4) Merge with the cell directly to the left
+
+The first option if we have too few keys in a cell is to borrow from an adjacent cell. To get the cell to the right, we go to the parent of the cell, then move over to the next child cell. Conversely, to get to the cell directly to the left, we go to the parent of the cel, and then move over to the previous child. In order to borrow from an adjacent cell, the adjacent cell needs to have a minimum of ⌈m/2⌉ + 1 keys. Therefore, we can sefely remove a key from it and move a key into our current cell. 
+
+To borrow a key from the cell to the left, we use the following code:
+
+```go
+// if we are not at the begining, try borrowing from the left
+if pred_cell != nil {
+   	if pred_cell.cur_size > min_size {
+	   	c.BorrowFromLeft()
+   		// we only borrow one value at a time, so see if we need to do operation again
+   		if c.cur_size < min_size {
+   			s.FixTreeUpwardsDelete(c)
+   		}
+   		return
+   	}
+}
+```
+The `BorrowFromLeft()` function does the following:
+- Find the cell directly to the left
+- Find and remove the last key in the left_cell
+- Move the last key into the parent
+- Move a value from the parent into the begining of the current cell
+
+If we cannot borrow from the left cell, we can alternativly try to borrow from the right cell as follows: 
+
+```go
+// if we are not at the end, try borrowing from the right
+if next_cell != nil {
+	if next_cell.cur_size > min_size {
+  		c.BorrowFromRight()
+  		// we only borrow one value at a time, so see if we need to do operation again
+  		if c.cur_size < min_size {
+  			s.FixTreeUpwardsDelete(c)
+  		}
+  	return
+  	}
+}
+```
+The `BorrorFromRight()` function does the following:
+- Find the cell directly to the right
+- Find and remove the first key in the right_cell
+- Move the first key into the parent
+- Move a value from the parent into the end of the current cell
+
+If we cannot borrow from the left cell or the right cell, we can then try to merge with the left cell. This happens if neither the cell to the left nor right have sufficient number of keys such that they can safely lose one. Therefore, they have at most *⌈m/2⌉-1* keys. Given that the current cell has *⌈m/2⌉ - 2* keys, if we were to merge with another cell, and steal a key from the parent, the resulting cell would have at maximum *M-1* keys, the maximum number of keys. Therefore, if we cannot boorrow, we can sefley merge with adjacent cells. 
+
+To merge with a cell to the left, we use the following code:
+```go
+// if we cannot borrow but are not at the begining, merge left
+if pred_cell != nil {
+	c.MergeWithLeft()
+		if c.parent.cur_size < min_size {
+			s.FixTreeUpwardsDelete(c.parent)
+		}
+	return
+}
+```
+
+The `MergeWithleft()` function does the following:
+- Find the cell directly to the left
+- Find and remove a key from the parent
+- Add the parent key to the end of the left cell
+- Move all the keys from the current cell to the left cell
+
+If we cannot, for some reason, merge with the left cell, we can alternativly merge with the right cell. To do so, we use the following code:
+```go
+// if we cannot borrow but are not at the end, merge right
+if next_cell != nil {
+	c.MergeWithRight()
+	if c.parent.cur_size < min_size {
+		s.FixTreeUpwardsDelete(c.parent)
+	}
+	return
+}
+```
+
+The `MergeWithRight()` function does the following:
+- Find the cell directly to the right
+- Call `MergeWithLeft` upon the right cell, effectivly merging the two cells
+
+After we do one of the four operations above, we have removed `v` from the leaf, and we are gauranteed to have a sufficient number of keys in the cell. However, we may have forced the parent cell to now have too few keys. To fix this issue, the parrent cell may do any one of the four operations to gain an extra key. We do this process recursilvy until all the cells in the tree have enough keys or until we reach the root of the tree. If we reach the root of the tree, we shring the height of the tree by one. 
+
+#### Deleting from a leaf
+If we want to delte a value that is not in a leaf, we can do the following. 
+- Delete the key from somwhere in the middle of the tree
+- Copy a leaf value into the deletion node so that the node maintains the same number of keys
+- Delete the leaf value using the methods mentioned above
+
+Since we know the location of the node where we want to delete a key, we need to find a value to replace it. We can replace the key with the next smallest key in the whole tree which we know must be in a leaf. To find this key, we use the followng code:
+
+```go
+// get current cell
+c := loc.cell
+
+// get index of deletion
+idx := loc.key_idx
+
+// get child for values smaller than deleted key
+child := c.children[idx]
+
+// find the largest value in subtree of values less than the key
+for !child.IsLeaf() {
+child = child.children[child.cur_size]
+}
+
+// get the key that is just smaller than deleted key
+swap_value := child.keys[child.cur_size-1]
+```
+
+In the code above, we first find the location of the key to delete. We then find the child subtree of all values smaller than the key. We then iterate down the tree until we reach a leaf. For each iteration, we go to the furthest right subree, the subtree that holds the greatest values. Once we reach the end, we can take the last value of the leaf, and we know it must be the greatest key that is still smaller than the deletion key. 
+
+After swapping the leaf key into the deletion cell, we need to delete the key from the child. We do that with the following code:
+```go
+// remove the key from the leaf
+child.keys[child.cur_size-1] = 0
+child.cur_size -= 1
+
+// check if we need to fix the leaf if it is too small
+min_size := int(math.Ceil(float64(s.degree)/2.0)) - 1
+if child.cur_size < min_size {
+	s.FixTreeUpwardsDelete(child)
+}
+```
+After again recursivly fixing the tree upwards, we know that the key `v` is deleted and that each cell has a valid number of keys in it. 
 
 ### Min
 
@@ -173,5 +305,7 @@ func (s *Set_BTree) delete(v int) {
 For insert, I used the following guide: [programiz.com](https://www.programiz.com/dsa/insertion-into-a-b-tree)
 
 For delete, I used the follwing guides: 
+https://www.geeksforgeeks.org/delete-operation-in-b-tree/
+
 
 
