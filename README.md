@@ -1,6 +1,17 @@
 # B-tree
 Golang implementation of a B-tree
 
+## To Run
+Running the main file creates a B-tree of degree 7 and populates it with the values 0-100, printing out the tree at each step. It then removes the values 0-100, also printing at each step.
+```console
+go run b-tree.go
+```
+The following test creates b-trees of degree 3 through 10 and populates them with thousands of random values that range between -100000 and 100000. It then searches for those values, then deletes them.
+```console
+go test -v
+```
+
+
 ## About B-tree
 A B-tree data structure is a self-balancing tree data structure. Like a binary search tree, values stored in a b-tree are ordered. This allows for insertion, deletion, and search operations to happen in logarithmic time. However, unlike a binary search tree, each node in a b-tree may hold more than one value and two children.
 
