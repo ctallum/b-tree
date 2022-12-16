@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 type Cell_BTree struct {
@@ -154,40 +155,6 @@ func (s *Set_BTree) max() *Value_Location {
 
 	// return last value of the leaf
 	return &Value_Location{current_node, current_node.cur_size - 1, current_node.keys[current_node.cur_size-1]}
-}
-
-func test_BTree() {
-	// B-Tree degree
-	size := 7
-	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
-	fmt.Println("***** INSERTING RIGHT **************************************************")
-	s := NewSet_BTree(size)
-	for i := 0; i < 100; i += 1 {
-		fmt.Printf("Inserting %d\n", i)
-		s.insert(i)
-		s.print()
-	}
-
-	// Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
-	fmt.Println("***** INSERTING LEFT **************************************************")
-	s = NewSet_BTree(size)
-	for i := 100; i > 0; i -= 1 {
-		fmt.Printf("Inserting %d\n", i)
-		s.insert(i)
-		s.print()
-	}
-
-	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
-	fmt.Println("***** DELETING **************************************************")
-	for i := 0; i < 100; i += 1 {
-		fmt.Printf("Deleting %d\n", i)
-		s.delete(i)
-		s.print()
-	}
-}
-
-func main() {
-	test_BTree()
 }
 
 // ************** HELPER CODE **********************************
@@ -682,4 +649,73 @@ func (s *Set_BTree) FixRoot(c *Cell_BTree) {
 	// otherwise, set the root be the child of the root
 	c.children[0].parent = nil
 	s.root = c.children[0]
+}
+
+// ************ Running the code **********************************************
+
+func GetRandom_BTree(degree int, n int) (*Set_BTree, []int) {
+	s := NewSet_BTree(degree)
+	vals := make([]int, n)
+	for i := 0; i < n; i++ {
+		v := rand.Intn(100000)
+		if v%2 == 0 {
+			// test negative values!
+			v = -v
+		}
+		s.insert(v)
+		vals[i] = v
+	}
+	return s, vals
+}
+
+func test_BTree() {
+	// B-Tree degree and number of values
+	size := 7
+
+	// First, insert all of 1, 2, 3, ..., 100 in order into an empty B-tree.
+	fmt.Println("***** INSERTING RIGHT **************************************************")
+	s := NewSet_BTree(size)
+	for i := 0; i < 100; i += 1 {
+		fmt.Printf("Inserting %d\n", i)
+		s.insert(i)
+		s.print()
+	}
+
+	// Similarly, insert all of 100, 99, 98, ..., 97 in order into an empty B-tree.
+	fmt.Println("***** INSERTING LEFT **************************************************")
+	s = NewSet_BTree(size)
+	for i := 100; i > 0; i -= 1 {
+		fmt.Printf("Inserting %d\n", i)
+		s.insert(i)
+		s.print()
+	}
+
+	// Delete the inserted values from the preceding tree, in order from 210, 220, ..., 350.
+	fmt.Println("***** DELETING **************************************************")
+	for i := 0; i < 100; i += 1 {
+		fmt.Printf("Deleting %d\n", i)
+		s.delete(i)
+		s.print()
+	}
+
+	fmt.Println("***** Making Random Tree ****************************************")
+	// generate a random tree
+	n_vals := 10000
+
+	// generate tree with random values 
+	s, vals := GetRandom_BTree(size, n_vals)
+	s.print()
+
+	
+	fmt.Println("***** Deleting Random Tree ****************************************")
+	// remove values from random tree
+	for _, v := range vals{
+		s.delete(v)
+	}
+	s.print()
+
+}
+
+func main() {
+	test_BTree()
 }
