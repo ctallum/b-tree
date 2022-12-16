@@ -2,13 +2,9 @@
 Golang implementation of a B-tree
 
 ## To Run
-Running the main file creates a B-tree of degree 7 and populates it with the values 0-100, printing out the tree at each step. It then removes the values 0-100, also printing at each step.
+Running the main file creates a B-tree of degree 7 and populates it with the values 0-100, printing out the tree at each step. It then removes the values 0-100, also printing at each step. Lastly, it generates a b-tree filled with 10000 random values, prints it, then deltes each value. 
 ```console
 go run b-tree.go
-```
-The following test creates b-trees of degree 3 through 10 and populates them with thousands of random values that range between -100000 and 100000. It then searches for those values, then deletes them.
-```console
-go test -v
 ```
 
 
@@ -24,6 +20,16 @@ A b-tree with degree *m* has the following properties:
 - A non-leaf node with *k* keys contains *k+1* children
 
 Each node has a set of keys. These keys act as seperation values which devide it's children which are roots of sub-trees. If a tree has two keys *a* and *b*, it will have three children. Child one will have all values less than *a*. Child two will have all the values between *a* and *b*. Child three will have all the values greater than *b*. In this manner, the tree is organized. 
+
+### Time Complexity
+
+| **Algorithm** | **Asymptotic Running Times** |
+|---------------|------------------------------|
+|Insert||
+|Search||
+|Delete||
+|Maximum||
+|Minimum||
 
 ### Use Cases
 A B-tree is well suited for storage systems that need to access large amount of data, such as databases. This is epspecially true if accessing the data is a time intensive process, for example if the data in a b-tree were stored in external drives. Since B-trees store large chunks of data in each node, to get to any piece of data, one needs to traverse less nodes, which means less disk read operaitons. In memory, each node will have all of its data stored physically close to eachother. Furthermore, B-trees don't reballance as often as other trees, so the time intensive task of moving data around on a disk happens less often. 
